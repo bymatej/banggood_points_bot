@@ -17,4 +17,8 @@ def get_password():
 
 
 def get_sleep_time():
-    return int(get_config().get("SleepSection", "browser.sleep.time"))
+    sleep_time = get_config().get("SleepSection", "browser.sleep.time")
+    if sleep_time is not None and sleep_time.isnumeric:
+        return int(sleep_time)
+    else:
+        return 2
