@@ -1,6 +1,8 @@
 from time import sleep
 
-from conf.Config import *
+from conf.config import get_password
+from conf.config import get_sleep_time
+from conf.config import get_username
 
 
 # Perform daily check-in

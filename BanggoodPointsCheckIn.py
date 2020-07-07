@@ -1,7 +1,10 @@
 from selenium import webdriver
 
-from actions.Actions import *
-from actions.Navigator import *
+from intents.actions import log_in
+from intents.actions import log_out
+from intents.actions import perform_check_in
+from intents.navigator import open_login_page
+from intents.navigator import open_points_page
 
 # Open Firefox browser
 browser = webdriver.Firefox()

@@ -1,6 +1,6 @@
 from time import sleep
 
-from conf.Config import *
+from conf.config import get_sleep_time
 
 
 # Go to banggood login page, wait for 2 seconds to load, confirm that title contains "login"
