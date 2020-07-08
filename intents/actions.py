@@ -1,5 +1,9 @@
 from time import sleep
 
+from selenium.common.exceptions import WebDriverException
+from selenium.webdriver.support import expected_conditions as EC
+from selenium.webdriver.support.ui import WebDriverWait
+
 from conf.config import get_password
 from conf.config import get_sleep_time
 from conf.config import get_username
@@ -30,7 +34,8 @@ def perform_check_in(browser):
     check_in_button = browser.find_element_by_xpath("/html/body/div[1]/section[2]/div/div[1]/div/div/button")
     if check_in_button.text.lower() == "check-in":
         check_in_button.click()
-        # Click on X icon on popup to close it
+        sleep(2)  # The get_sleep_time() method is not used as it always needs ~2 seconds here to view the popup
+        # Click on the button on popup to close it
         browser.find_element_by_xpath("/html/body/div[2]/div/div[2]/div/div[3]").click()
         print("Check-in was successful")
     else:
@@ -41,14 +46,36 @@ def perform_check_in(browser):
 
 # Complete task "Search products and add to cart" and get reward points
 def perform_products_search_and_add_to_cart(browser):
+    # remember current tab
+    tasks_tab = browser.current_window_handle
+
     # div element containing task description and the "Complete task" button
     task_div = browser.find_element_by_xpath("//li[contains(@class, 'item') and contains(@class, 'browseAddcart')]")
     # find button and click it
     task_div.find_element_by_class_name("item-btn").click()
-    # todo: code below produces error - fix it
-    # Switch to newly opened tab
-    browser.switch_to.window(browser.window_handles[1])
+
+    # Switch to newly opened tab and confirm it is the right one
+    WebDriverWait(browser, 10).until(EC.new_window_is_opened)
+    WebDriverWait(browser, 10).until(EC.number_of_windows_to_be(2))  # todo: consider moving from sleep() to this wait
+    all_tabs = browser.window_handles
+    new_tab = [tab for tab in all_tabs if tab != tasks_tab][0]
+    browser.switch_to.window(new_tab)
+    WebDriverWait(browser, 10).until(EC.url_contains("https://www.banggood.com/index.php?com=account&t=vipTaskProduct"))
+
     # get ul element holding all products
-    product_list_ul_element = browser.find_element_by_xpath("//ul[contains(@class, 'goodlist') and contains(@class, 'cf')]")
-    product_li_elements = product_list_ul_element.find_element("li")
-    print(product_li_elements)
+    product_li_elements = browser \
+        .find_element_by_xpath("//ul[contains(@class, 'goodlist') and contains(@class, 'cf')]") \
+        .find_elements_by_tag_name("li")
+    i = 0
+    while i < 3:
+        try:
+            # todo: remember the product name and add it to the list so that we can remove it from cart later on
+            # also, remember the quantity and if it is greater than 1, then do not remove the product, but subtract qty by 1
+            product_li_elements[i].find_element_by_class_name("main").find_element_by_class_name("img").click()
+            sleep(get_sleep_time())
+            browser.find_element_by_class_name("add_to_cart").click()
+            browser.back()
+            i += 1
+        except WebDriverException:
+            print("Unable to add product to cart")  # todo: specify which product, and use logging instead of print
+            i -= 1

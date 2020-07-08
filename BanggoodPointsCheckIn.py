@@ -26,6 +26,6 @@ open_tasks_page(browser)
 perform_products_search_and_add_to_cart(browser)
 
 # Log out
-log_out(browser)
+# log_out(browser)
 # Close browser
-browser.close()
+# browser.close()
