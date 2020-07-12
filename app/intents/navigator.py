@@ -1,6 +1,6 @@
 from time import sleep
 
-from conf.config import get_sleep_time
+from test.conf import get_sleep_time
 
 
 def __perform_navigation(browser, url):

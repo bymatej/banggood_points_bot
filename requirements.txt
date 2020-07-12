@@ -1,0 +1,7 @@
+# Install prerequisites
+selenium >= 3.141.0
+webdrivermanager >= 0.8.0
+
+# Then install the web driver
+# webdrivermanager firefox --linkpath /usr/local/bin
+# Source: https://stackoverflow.com/a/61084589
