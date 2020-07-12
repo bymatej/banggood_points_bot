@@ -1,7 +1,9 @@
+import traceback
 from time import sleep
 
 from selenium.common.exceptions import WebDriverException
-from selenium.webdriver.support import expected_conditions as EC
+from selenium.webdriver.common.by import By
+from selenium.webdriver.support import expected_conditions as ec
 from selenium.webdriver.support.ui import WebDriverWait
 
 from conf.config import get_password
@@ -55,27 +57,37 @@ def perform_products_search_and_add_to_cart(browser):
     task_div.find_element_by_class_name("item-btn").click()
 
     # Switch to newly opened tab and confirm it is the right one
-    WebDriverWait(browser, 10).until(EC.new_window_is_opened)
-    WebDriverWait(browser, 10).until(EC.number_of_windows_to_be(2))  # todo: consider moving from sleep() to this wait
+    WebDriverWait(browser, 10).until(ec.new_window_is_opened)
+    WebDriverWait(browser, 10).until(ec.number_of_windows_to_be(2))  # todo: consider moving from sleep() to this wait
     all_tabs = browser.window_handles
     new_tab = [tab for tab in all_tabs if tab != tasks_tab][0]
     browser.switch_to.window(new_tab)
-    WebDriverWait(browser, 10).until(EC.url_contains("https://www.banggood.com/index.php?com=account&t=vipTaskProduct"))
+    WebDriverWait(browser, 10).until(ec.url_contains("https://www.banggood.com/index.php?com=account&t=vipTaskProduct"))
 
     # get ul element holding all products
     product_li_elements = browser \
         .find_element_by_xpath("//ul[contains(@class, 'goodlist') and contains(@class, 'cf')]") \
         .find_elements_by_tag_name("li")
-    i = 0
-    while i < 3:
+    successful_add_to_cart_count = 0
+    for li_element in product_li_elements:
         try:
             # todo: remember the product name and add it to the list so that we can remove it from cart later on
             # also, remember the quantity and if it is greater than 1, then do not remove the product, but subtract qty by 1
-            product_li_elements[i].find_element_by_class_name("main").find_element_by_class_name("img").click()
+            WebDriverWait(browser, 10).until(ec.presence_of_element_located((By.CLASS_NAME, "img")))
+            li_element.find_element_by_class_name("main").find_element_by_class_name("img").click()
             sleep(get_sleep_time())
-            browser.find_element_by_class_name("add_to_cart").click()
-            browser.back()
-            i += 1
+            # WebDriverWait(browser, 10).until(ec.presence_of_element_located((By.CLASS_NAME, "add_to_cart")))
+            # browser.find_element_by_class_name("add_to_cart").click()
+            WebDriverWait(browser, 10).until(
+                ec.presence_of_element_located((By.XPATH, "/html/body/div[8]/div/div[2]/form/div[5]/div[1]/a[1]")))
+            browser.find_element_by_xpath("/html/body/div[8]/div/div[2]/form/div[5]/div[1]/a[1]").click()
+            successful_add_to_cart_count += 1
         except WebDriverException:
             print("Unable to add product to cart")  # todo: specify which product, and use logging instead of print
-            i -= 1
+            traceback.print_exc()
+        finally:
+            # browser.back()  # back doesn't work
+            browser.execute_script("window.history.go(-1)")
+            sleep(10)  # todo: experimental, remove or replace with proper code to wait until page is loaded after back
+            if successful_add_to_cart_count > 2:
+                break

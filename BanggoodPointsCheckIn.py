@@ -1,7 +1,7 @@
 from selenium import webdriver
+from selenium.webdriver.firefox.options import Options
 
 from intents.actions import log_in
-from intents.actions import log_out
 from intents.actions import perform_check_in
 from intents.actions import perform_products_search_and_add_to_cart
 from intents.navigator import open_login_page
@@ -9,7 +9,9 @@ from intents.navigator import open_points_page
 from intents.navigator import open_tasks_page
 
 # Open Firefox browser
-browser = webdriver.Firefox()
+options = Options()
+options.headless = False  # todo: change to True when everything is finished
+browser = webdriver.Firefox(options=options)
 # Open log-in page
 open_login_page(browser)
 # Log in
