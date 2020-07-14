@@ -1,11 +1,9 @@
-from time import sleep
-
-from conf.config import get_sleep_time
+from intents.utils import wait
 
 
 def __perform_navigation(browser, url):
     browser.get(url)
-    sleep(get_sleep_time())
+    wait()
 
 
 # Go to banggood login page, wait for 2 seconds to load, confirm that title contains "login"

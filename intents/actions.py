@@ -7,8 +7,10 @@ from selenium.webdriver.support import expected_conditions as ec
 from selenium.webdriver.support.ui import WebDriverWait
 
 from conf.config import get_password
-from conf.config import get_sleep_time
 from conf.config import get_username
+from intents.utils import close_current_tab
+from intents.utils import open_link_in_new_tab
+from intents.utils import wait
 
 
 def log_in(browser):
@@ -21,7 +23,7 @@ def log_in(browser):
     password_login_input_field.send_keys(get_password())
     # Perform login (get the button and click it)
     browser.find_element_by_xpath("/html/body/div[1]/div/form[1]/ul/li[3]/input").click()
-    sleep(get_sleep_time())
+    wait()
     # assert "banggood" in browser.title.lower() # todo: fix
 
 
@@ -54,7 +56,12 @@ def perform_products_search_and_add_to_cart(browser):
     # div element containing task description and the "Complete task" button
     task_div = browser.find_element_by_xpath("//li[contains(@class, 'item') and contains(@class, 'browseAddcart')]")
     # find button and click it
-    task_div.find_element_by_class_name("item-btn").click()
+    task_button = task_div.find_element_by_class_name("item-btn")
+    # Check if reward is already received and terminate if it is
+    if task_button.text.lower() == "received":
+        return
+    else:
+        task_button.click()
 
     # Switch to newly opened tab and confirm it is the right one
     WebDriverWait(browser, 10).until(ec.new_window_is_opened)
@@ -74,20 +81,21 @@ def perform_products_search_and_add_to_cart(browser):
             # todo: remember the product name and add it to the list so that we can remove it from cart later on
             # also, remember the quantity and if it is greater than 1, then do not remove the product, but subtract qty by 1
             WebDriverWait(browser, 10).until(ec.presence_of_element_located((By.CLASS_NAME, "img")))
-            li_element.find_element_by_class_name("main").find_element_by_class_name("img").click()
-            sleep(get_sleep_time())
-            # WebDriverWait(browser, 10).until(ec.presence_of_element_located((By.CLASS_NAME, "add_to_cart")))
-            # browser.find_element_by_class_name("add_to_cart").click()
+            open_link_in_new_tab(browser, li_element.find_element_by_class_name("main").find_element_by_class_name(
+                "img").find_element_by_tag_name("a").get_attribute("href"))
             WebDriverWait(browser, 10).until(
                 ec.presence_of_element_located((By.XPATH, "/html/body/div[8]/div/div[2]/form/div[5]/div[1]/a[1]")))
             browser.find_element_by_xpath("/html/body/div[8]/div/div[2]/form/div[5]/div[1]/a[1]").click()
+            # Click on "Continue shopping" button
+            WebDriverWait(browser, 10).until(
+                ec.presence_of_element_located((By.XPATH, "/html/body/div[40]/div[2]/div/div/div[1]/div/div/a[1]")))
+            browser.find_element_by_xpath("/html/body/div[40]/div[2]/div/div/div[1]/div/div/a[1]").click()
             successful_add_to_cart_count += 1
+            close_current_tab(browser)
         except WebDriverException:
             print("Unable to add product to cart")  # todo: specify which product, and use logging instead of print
             traceback.print_exc()
         finally:
-            # browser.back()  # back doesn't work
-            browser.execute_script("window.history.go(-1)")
-            sleep(10)  # todo: experimental, remove or replace with proper code to wait until page is loaded after back
             if successful_add_to_cart_count > 2:
+                browser.switch_to.window(tasks_tab)
                 break
