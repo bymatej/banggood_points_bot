@@ -9,6 +9,7 @@ from selenium.webdriver.support.ui import WebDriverWait
 from conf.config import get_password
 from conf.config import get_username
 from intents.utils import close_current_tab
+from intents.utils import close_current_tab_and_switch_to_window
 from intents.utils import open_link_in_new_tab
 from intents.utils import wait
 
@@ -35,12 +36,14 @@ def log_out(browser):
 
 # Perform daily check-in
 def perform_check_in(browser):
-    check_in_button = browser.find_element_by_xpath("/html/body/div[1]/section[2]/div/div[1]/div/div/button")
+    # check in button on the side
+    browser.find_element_by_xpath("//*[contains(text(), 'Check-in')]").click()
+    check_in_button = browser.find_element_by_xpath("/html/body/div[1]/div[9]/div[2]/div/div[2]")
     if check_in_button.text.lower() == "check-in":
         check_in_button.click()
         sleep(2)  # The get_sleep_time() method is not used as it always needs ~2 seconds here to view the popup
         # Click on the button on popup to close it
-        browser.find_element_by_xpath("/html/body/div[2]/div/div[2]/div/div[3]").click()
+        browser.find_element_by_xpath("//*[contains(text(), 'OK, I know')]").click()
         print("Check-in was successful")
     else:
         # Get time left for the next check-in
@@ -65,7 +68,8 @@ def perform_products_search_and_add_to_cart(browser):
 
     # Switch to newly opened tab and confirm it is the right one
     WebDriverWait(browser, 10).until(ec.new_window_is_opened)
-    WebDriverWait(browser, 10).until(ec.number_of_windows_to_be(2))  # todo: consider moving from sleep() to this wait
+    #todo: see if the code below is necessary
+#    WebDriverWait(browser, 10).until(ec.number_of_windows_to_be(2))  # todo: consider moving from sleep() to this wait
     all_tabs = browser.window_handles
     new_tab = [tab for tab in all_tabs if tab != tasks_tab][0]
     browser.switch_to.window(new_tab)
@@ -85,7 +89,10 @@ def perform_products_search_and_add_to_cart(browser):
                 "img").find_element_by_tag_name("a").get_attribute("href"))
             WebDriverWait(browser, 10).until(
                 ec.presence_of_element_located((By.XPATH, "/html/body/div[8]/div/div[2]/form/div[5]/div[1]/a[1]")))
+            wait()
             browser.find_element_by_xpath("/html/body/div[8]/div/div[2]/form/div[5]/div[1]/a[1]").click()
+            wait()
+            wait()
             # Click on "Continue shopping" button
             WebDriverWait(browser, 10).until(
                 ec.presence_of_element_located((By.XPATH, "/html/body/div[40]/div[2]/div/div/div[1]/div/div/a[1]")))
@@ -97,5 +104,5 @@ def perform_products_search_and_add_to_cart(browser):
             traceback.print_exc()
         finally:
             if successful_add_to_cart_count > 2:
-                browser.switch_to.window(tasks_tab)
+                close_current_tab_and_switch_to_window(browser, tasks_tab)
                 break

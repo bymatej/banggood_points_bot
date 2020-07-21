@@ -17,6 +17,12 @@ def close_current_tab(browser):
     browser.switch_to_window(browser.window_handles[get_last_opened_tab_id(browser)])
 
 
+def close_current_tab_and_switch_to_window(browser, window_to_switch_to):
+    wait()
+    browser.close()
+    browser.switch_to_window(window_to_switch_to)
+
+
 def get_last_opened_tab_id(browser):
     return len(browser.window_handles) - 1
 
