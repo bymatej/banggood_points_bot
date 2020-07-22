@@ -62,6 +62,7 @@ def perform_products_search_and_add_to_cart(browser):
     task_button = task_div.find_element_by_class_name("item-btn")
     # Check if reward is already received and terminate if it is
     if task_button.text.lower() == "received":
+        # todo: this return does not work, so break it down in several methods and exit differently
         return
     else:
         task_button.click()
@@ -69,7 +70,7 @@ def perform_products_search_and_add_to_cart(browser):
     # Switch to newly opened tab and confirm it is the right one
     WebDriverWait(browser, 10).until(ec.new_window_is_opened)
     #todo: see if the code below is necessary
-#    WebDriverWait(browser, 10).until(ec.number_of_windows_to_be(2))  # todo: consider moving from sleep() to this wait
+    WebDriverWait(browser, 10).until(ec.number_of_windows_to_be(2))  # todo: consider moving from sleep() to this wait
     all_tabs = browser.window_handles
     new_tab = [tab for tab in all_tabs if tab != tasks_tab][0]
     browser.switch_to.window(new_tab)
@@ -95,8 +96,8 @@ def perform_products_search_and_add_to_cart(browser):
             wait()
             # Click on "Continue shopping" button
             WebDriverWait(browser, 10).until(
-                ec.presence_of_element_located((By.XPATH, "/html/body/div[40]/div[2]/div/div/div[1]/div/div/a[1]")))
-            browser.find_element_by_xpath("/html/body/div[40]/div[2]/div/div/div[1]/div/div/a[1]").click()
+                ec.presence_of_element_located((By.XPATH, "//a[contains(text(), 'Continue Shopping')]/ancestor::div[contains(@class, 'modal_container')]")))
+            browser.find_element_by_xpath("//a[contains(text(), 'Continue Shopping')]/ancestor::div[contains(@class, 'modal_container')]").click()
             successful_add_to_cart_count += 1
             close_current_tab(browser)
         except WebDriverException:
