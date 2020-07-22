@@ -1,26 +1,37 @@
+import logging
+from time import sleep
+
 from selenium.webdriver.support import expected_conditions as ec
 from selenium.webdriver.support.ui import WebDriverWait
+
 from conf.config import get_sleep_time
-from time import sleep
 
 
 def open_link_in_new_tab(browser, url):
+    logging.info("Opening the new tab with the url {}".format(url))
     browser.execute_script("window.open('{}', 'new_window')".format(url))
+
+    logging.info("Waiting for the tab to be opened")
     WebDriverWait(browser, 10).until(ec.new_window_is_opened)
+
+    logging.info("Switching to newly opened tab")
     browser.switch_to_window(browser.window_handles[get_last_opened_tab_id(browser)])
     WebDriverWait(browser, 10).until(ec.url_contains(url))
 
 
 def close_current_tab(browser):
-    wait()
-    browser.close()
-    browser.switch_to_window(browser.window_handles[get_last_opened_tab_id(browser)])
+    close_current_tab_and_switch_to_window(browser, None)
 
 
 def close_current_tab_and_switch_to_window(browser, window_to_switch_to):
+    logging.info("Closing current tab")
     wait()
     browser.close()
-    browser.switch_to_window(window_to_switch_to)
+    logging.info("Switching to previously opened tab")
+    if window_to_switch_to is None:
+        browser.switch_to_window(browser.window_handles[get_last_opened_tab_id(browser)])
+    else:
+        browser.switch_to_window(window_to_switch_to)
 
 
 def get_last_opened_tab_id(browser):
@@ -28,4 +39,6 @@ def get_last_opened_tab_id(browser):
 
 
 def wait():
-    sleep(get_sleep_time())
+    seconds_to_sleep = get_sleep_time()
+    logging.info("Waiting for {} seconds".format(seconds_to_sleep))
+    sleep(seconds_to_sleep)
