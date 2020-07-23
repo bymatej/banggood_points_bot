@@ -34,6 +34,11 @@ def close_current_tab_and_switch_to_window(browser, window_to_switch_to):
         browser.switch_to_window(window_to_switch_to)
 
 
+def get_current_tab(browser):
+    logging.info("Getting currently opened tab")
+    return browser.current_window_handle
+
+
 def get_last_opened_tab_id(browser):
     return len(browser.window_handles) - 1
 

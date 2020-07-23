@@ -11,6 +11,7 @@ from conf.config import get_password
 from conf.config import get_username
 from intents.utils import close_current_tab
 from intents.utils import close_current_tab_and_switch_to_window
+from intents.utils import get_current_tab
 from intents.utils import open_link_in_new_tab
 from intents.utils import wait
 
@@ -19,6 +20,7 @@ logger = logging.getLogger()
 logging.basicConfig(level=logging.INFO)
 
 
+# Log in
 def log_in(browser):
     logging.info("Getting email input field in the login form")
     email_login_input_field = browser.find_element_by_xpath("/html/body/div[1]/div/form[1]/ul/li[1]/label/div/input")
@@ -37,6 +39,7 @@ def log_in(browser):
     # assert "banggood" in browser.title.lower() # todo: fix
 
 
+# Log out
 def log_out(browser):
     # Sign out
     logging.info("Logging out")
@@ -68,32 +71,14 @@ def perform_check_in(browser):
 
 # Complete task "Search products and add to cart" and get reward points
 def perform_products_search_and_add_to_cart(browser):
-    # remember current tab
-    tasks_tab = browser.current_window_handle
-
-    # div element containing task description and the "Complete task" button
-    task_div = browser.find_element_by_xpath("//li[contains(@class, 'item') and contains(@class, 'browseAddcart')]")
-    # find button and click it
-    task_button = task_div.find_element_by_class_name("item-btn")
-    # Check if reward is already received and terminate if it is
-    if task_button.text.lower() == "received":
-        # todo: this return does not work, so break it down in several methods and exit differently
+    tasks_tab = get_current_tab(browser)
+    is_button_clicked = __find_task_button_and_click_it(browser)
+    if not is_button_clicked:
         return
-    else:
-        task_button.click()
 
-    # Switch to newly opened tab and confirm it is the right one
-    WebDriverWait(browser, 10).until(ec.new_window_is_opened)
-    WebDriverWait(browser, 10).until(ec.number_of_windows_to_be(2))
-    all_tabs = browser.window_handles
-    new_tab = [tab for tab in all_tabs if tab != tasks_tab][0]
-    browser.switch_to.window(new_tab)
-    WebDriverWait(browser, 10).until(ec.url_contains("https://www.banggood.com/index.php?com=account&t=vipTaskProduct"))
+    __switch_to_newly_opened_tab(browser, tasks_tab)
+    product_li_elements = __get_list_of_products(browser)
 
-    # get ul element holding all products
-    product_li_elements = browser \
-        .find_element_by_xpath("//ul[contains(@class, 'goodlist') and contains(@class, 'cf')]") \
-        .find_elements_by_tag_name("li")
     successful_add_to_cart_count = 0
     for li_element in product_li_elements:
         try:
@@ -123,3 +108,39 @@ def perform_products_search_and_add_to_cart(browser):
             if successful_add_to_cart_count > 2:
                 close_current_tab_and_switch_to_window(browser, tasks_tab)
                 break
+
+
+def __find_task_button_and_click_it(browser):
+    is_button_clicked = False
+
+    logging.info("Finding the div element containing task description and the \"Complete task\" button")
+    task_div = browser.find_element_by_xpath("//li[contains(@class, 'item') and contains(@class, 'browseAddcart')]")
+
+    logging.info("Finding the button inside div element")
+    task_button = task_div.find_element_by_class_name("item-btn")
+
+    logging.info("Button text is: {}".format(task_button.text))
+    if task_button.text.lower() != "received":
+        logging.info("Click the button")
+        task_button.click()
+        is_button_clicked = True
+    else:
+        logging.info("Not clicking a button - reward already received")
+
+    return is_button_clicked
+
+
+def __switch_to_newly_opened_tab(browser, tasks_tab):
+    logging.info("Switching to the newly opened tab and confirming it is the right one")
+    WebDriverWait(browser, 10).until(ec.new_window_is_opened)
+    WebDriverWait(browser, 10).until(ec.number_of_windows_to_be(2))
+    all_tabs = browser.window_handles
+    new_tab = [tab for tab in all_tabs if tab != tasks_tab][0]
+    browser.switch_to.window(new_tab)
+    WebDriverWait(browser, 10).until(ec.url_contains("https://www.banggood.com/index.php?com=account&t=vipTaskProduct"))
+
+
+def __get_list_of_products(browser):
+    logging.info("Getting the ul element holding all li elements that represent the products")
+    return browser.find_element_by_xpath("//ul[contains(@class, 'goodlist') and contains(@class, 'cf')]") \
+        .find_elements_by_tag_name("li")
