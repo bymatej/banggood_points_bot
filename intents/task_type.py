@@ -13,5 +13,5 @@ import enum
 
 class Tasks(enum.Enum):
     BROWSE_ADD_3_PRODUCTS_TO_CART = "//li[contains(@class, 'item') and contains(@class, 'browseAddcart')]"
-    BROWSE_ADD_3_PRODUCTS_TO_WISH_LIST = ""
+    BROWSE_ADD_3_PRODUCTS_TO_WISH_LIST = "//li[contains(@class, 'item') and contains(@class, 'wishlist')]"
     SEARCH_ADD_X_PRODUCTS_TO_CART = ""

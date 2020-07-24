@@ -8,6 +8,7 @@ Task data containing the following information:
 
 class TaskData:
 
-    def __init__(self, task_type):
+    def __init__(self, task_type, identifier_for_logging):
         self.task_type = task_type
+        self.identifier_for_logging = identifier_for_logging
         self.products = []

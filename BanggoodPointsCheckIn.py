@@ -3,8 +3,9 @@ from selenium.webdriver.firefox.options import Options
 
 from intents.actions import log_in
 from intents.actions import log_out
-from intents.actions import perform_check_in
 from intents.actions import perform_browse_and_add_to_cart
+from intents.actions import perform_browse_and_add_to_wish_list
+from intents.actions import perform_check_in
 from intents.navigator import open_login_page
 from intents.navigator import open_points_page
 from intents.navigator import open_tasks_page
@@ -28,8 +29,12 @@ perform_check_in(browser)
 open_tasks_page(browser)
 # Perform tasks
 perform_browse_and_add_to_cart(browser)
+# Check if you are still on tasks page, and if not - reopen the tasks page
+if "https://www.banggood.com/index.php?bid=28839&com=account&t=vipTaskList#points" not in browser.current_url:
+    open_tasks_page(browser)
+perform_browse_and_add_to_wish_list(browser)
 
 # # Log out
-log_out(browser)
+# log_out(browser)
 # # Close browser
-browser.quit()
+# browser.quit()

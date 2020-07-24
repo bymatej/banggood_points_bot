@@ -8,6 +8,7 @@ from selenium.common.exceptions import WebDriverException
 from conf.config import get_password
 from conf.config import get_username
 from intents.subactions import add_product_to_cart
+from intents.subactions import add_product_to_wish_list
 from intents.subactions import find_task_button_and_click_it
 from intents.subactions import get_list_of_products
 from intents.subactions import switch_to_newly_opened_tab
@@ -73,28 +74,42 @@ def perform_check_in(browser):
 
 # Complete task "Browse and add 3 products to cart" and get reward points
 def perform_browse_and_add_to_cart(browser):
-    # todo: remember the product name and add it to the list so that we can remove it from cart later on
-    # also, remember the quantity and if it is greater than 1, then do not remove the product, but subtract qty by 1
-    task = TaskData(Tasks.BROWSE_ADD_3_PRODUCTS_TO_CART)
+    task = TaskData(Tasks.BROWSE_ADD_3_PRODUCTS_TO_CART, "cart")
+    __perform_browse_and_add(browser, task)
+
+
+# Complete task "Browse and add 3 products to wish list" and get reward points
+def perform_browse_and_add_to_wish_list(browser):
+    task = TaskData(Tasks.BROWSE_ADD_3_PRODUCTS_TO_WISH_LIST, "wish list")
+    __perform_browse_and_add(browser, task)
+
+
+def __perform_browse_and_add(browser, task_data):
+    # todo: remember the product name and add it to the list so that we can remove it later on
     tasks_tab = get_current_tab(browser)
 
-    is_reward_received = find_task_button_and_click_it(browser, task)
+    is_reward_received = find_task_button_and_click_it(browser, task_data)
     if is_reward_received:
         return
 
     switch_to_newly_opened_tab(browser, tasks_tab)
     product_li_elements = get_list_of_products(browser)
 
-    successful_add_to_cart_count = 0
+    successfully_added_products_count = 0
     for li_element in product_li_elements:
         try:
-            add_product_to_cart(browser, li_element, task)
-            successful_add_to_cart_count += 1
+            if task_data.task_type == Tasks.BROWSE_ADD_3_PRODUCTS_TO_CART:
+                add_product_to_cart(browser, li_element, task_data)
+            else:
+                add_product_to_wish_list(browser, li_element, task_data)
+
+            successfully_added_products_count += 1
         except WebDriverException:
-            logging.error("Unable to add product to cart")  # todo: specify which product
+            logging.error("Unable to add product to {}".format(task_data.identifier_for_logging))
             logging.error(traceback.format_exc())  # Print stack trace
         finally:
-            if successful_add_to_cart_count > 2:
+            if successfully_added_products_count > 2:
                 close_current_tab_and_switch_to_window(browser, tasks_tab)
-                logging.info("Products that were added to cart are: {}".format(', '.join(task.products)))
+                logging.info("Products that were added to {} are: {}".format(task_data.identifier_for_logging,
+                                                                             ', '.join(task_data.products)))
                 break
