@@ -20,6 +20,7 @@ def open_link_in_new_tab(browser, url):
 
 
 def close_current_tab(browser):
+    logging.info("Closing current tab")
     close_current_tab_and_switch_to_window(browser, None)
 
 
