@@ -30,6 +30,6 @@ open_tasks_page(browser)
 perform_browse_and_add_to_cart(browser)
 
 # # Log out
-# log_out(browser)
+log_out(browser)
 # # Close browser
-# browser.quit()
+browser.quit()
