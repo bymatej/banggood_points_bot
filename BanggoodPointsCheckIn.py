@@ -4,7 +4,7 @@ from selenium.webdriver.firefox.options import Options
 from intents.actions import log_in
 from intents.actions import log_out
 from intents.actions import perform_check_in
-from intents.actions import perform_products_search_and_add_to_cart
+from intents.actions import perform_browse_and_add_to_cart
 from intents.navigator import open_login_page
 from intents.navigator import open_points_page
 from intents.navigator import open_tasks_page
@@ -27,9 +27,9 @@ perform_check_in(browser)
 # Open tasks page
 open_tasks_page(browser)
 # Perform tasks
-perform_products_search_and_add_to_cart(browser)
+perform_browse_and_add_to_cart(browser)
 
 # # Log out
-log_out(browser)
+# log_out(browser)
 # # Close browser
-browser.quit()
+# browser.quit()
