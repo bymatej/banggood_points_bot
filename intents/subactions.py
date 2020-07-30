@@ -115,14 +115,35 @@ def __open_product_details_page_and_get_product_name(browser, li_element):
 
 def __continue_shopping(browser, task_data, product_name):
     wait()  # Wait a little longer to ensure the product is added and popup is presented
-
-    logging.info("Clicking on \"Continue Shopping\" button")
-    continue_shopping_button_xpath = "//a[contains(text(), 'Continue Shopping')]" \
-                                     "/ancestor::div[contains(@class, 'modal_container')]"
-    # Todo: fix bug on wishlists
-    WebDriverWait(browser, 10).until(ec.presence_of_element_located((By.XPATH, continue_shopping_button_xpath)))
-    browser.find_element_by_xpath(continue_shopping_button_xpath).click()
-
-    logging.info("Adding product {} to list and closing the Product Details Page".format(product_name))
     task_data.products.append(product_name)
+
+    if len(task_data.products) < 3:
+        logging.info("Clicking on \"Continue Shopping\" button")
+        continue_shopping_button_xpath = "//div[contains(@class, 'modal_container')] " \
+                                         "//a[(contains(translate(text(), " \
+                                         "'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz'), " \
+                                         "'continue shopping'))]"
+        WebDriverWait(browser, 10).until(ec.presence_of_element_located((By.XPATH, continue_shopping_button_xpath)))
+        browser.find_element_by_xpath(continue_shopping_button_xpath).click()
+
+        logging.info("Adding product {} to list and closing the Product Details Page".format(product_name))
+    else:
+        __receive_reward(browser)
+
     close_current_tab(browser)
+    wait()
+
+
+def __receive_reward(browser):
+    wait()
+
+    # Todo: detect if the popup appeared
+    logging.info("Clicking on \"Receive it\" button")
+    receive_it_button_xpath = "//div[contains(@class, 'modal')] " \
+                              "//a[(contains(" \
+                              "translate(text(), 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz'), " \
+                              "'receive it'))]"
+    WebDriverWait(browser, 10).until(ec.presence_of_element_located((By.XPATH, receive_it_button_xpath)))
+    browser.find_element_by_xpath(receive_it_button_xpath).click()
+
+    logging.info("Receiving points for completing the task")

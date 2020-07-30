@@ -107,6 +107,7 @@ def __perform_browse_and_add(browser, task_data):
         except WebDriverException:
             logging.error("Unable to add product to {}".format(task_data.identifier_for_logging))
             logging.error(traceback.format_exc())  # Print stack trace
+            close_current_tab_and_switch_to_window(browser, tasks_tab)
         finally:
             if successfully_added_products_count > 2:
                 close_current_tab_and_switch_to_window(browser, tasks_tab)
