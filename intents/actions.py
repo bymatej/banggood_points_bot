@@ -40,7 +40,6 @@ def log_in(browser):
     browser.find_element_by_xpath("/html/body/div[1]/div/form[1]/ul/li[3]/input").click()
 
     wait()
-    # assert "banggood" in browser.title.lower() # todo: fix
 
 
 # Log out
@@ -96,7 +95,10 @@ def perform_search_and_add_to_cart(browser):
 
 
 def __perform_browse_and_add(browser, task_data):
-    # todo: remember the product name and add it to the list so that we can remove it later on
+    # todo:
+    # - add cleanup method at the end of if statement inside the finally block
+    # - add tasks for cleaning up the wish list and the cart (remove products added in the tasks)
+    # - write down (in logger) the amount of points before and after each task (and after all tasks)
     tasks_tab = get_current_tab(browser)
 
     is_reward_received = find_task_button_and_click_it(browser, task_data)
