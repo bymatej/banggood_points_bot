@@ -24,7 +24,7 @@ from intents.utils import wait
 
 def find_task_button_and_click_it(browser, task_data):
     logging.info("Finding the div element containing task description and the \"Complete task\" button")
-    task_div = browser.find_element_by_xpath(task_data.task_type.value)
+    task_div = browser.find_element_by_xpath(task_data.xpath)
 
     logging.info("Finding the button inside div element")
     task_button = task_div.find_element_by_class_name("item-btn")
@@ -129,16 +129,16 @@ def __continue_shopping(browser, task_data, product_name):
     task_data.products.append(product_name)
 
     if len(task_data.products) >= 3:
-        __receive_reward(browser)
+        __receive_reward(browser, task_data)
 
     close_current_tab(browser)
 
 
-def __receive_reward(browser):
+def __receive_reward(browser, task_data):
     wait()
 
     logging.info("Clicking on \"Receive it\" button")
-    receive_it_button_xpath = "//div[contains(@class, 'modal')] " \
+    receive_it_button_xpath = f"//div[contains(@class, '{task_data.modal_css_class}')] " \
                               "//a[(contains(" \
                               "translate(text(), 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz'), " \
                               "'receive it'))]"

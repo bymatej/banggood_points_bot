@@ -12,8 +12,9 @@ from intents.subactions import add_product_to_wish_list
 from intents.subactions import find_task_button_and_click_it
 from intents.subactions import get_list_of_products
 from intents.subactions import switch_to_newly_opened_tab
-from intents.task_data import TaskData
-from intents.task_type import Tasks
+from intents.task.task_type import Tasks
+from intents.task.task_type import browse_add_3_products_to_cart
+from intents.task.task_type import browse_add_3_products_to_wish_list
 from intents.utils import close_current_tab_and_switch_to_window
 from intents.utils import get_current_tab
 from intents.utils import wait
@@ -74,14 +75,12 @@ def perform_check_in(browser):
 
 # Complete task "Browse and add 3 products to cart" and get reward points
 def perform_browse_and_add_to_cart(browser):
-    task = TaskData(Tasks.BROWSE_ADD_3_PRODUCTS_TO_CART, "cart")
-    __perform_browse_and_add(browser, task)
+    __perform_browse_and_add(browser, browse_add_3_products_to_cart())
 
 
 # Complete task "Browse and add 3 products to wish list" and get reward points
 def perform_browse_and_add_to_wish_list(browser):
-    task = TaskData(Tasks.BROWSE_ADD_3_PRODUCTS_TO_WISH_LIST, "wish list")
-    __perform_browse_and_add(browser, task)
+    __perform_browse_and_add(browser, browse_add_3_products_to_wish_list())
 
 
 def __perform_browse_and_add(browser, task_data):
