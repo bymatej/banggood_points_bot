@@ -7,6 +7,8 @@ from selenium.common.exceptions import WebDriverException
 
 from conf.config import get_password
 from conf.config import get_username
+from intents.navigator import open_cart_page
+from intents.navigator import open_wish_list_page
 from intents.subactions import add_product_to_cart
 from intents.subactions import add_product_to_wish_list
 from intents.subactions import find_task_button_and_click_it
@@ -123,7 +125,33 @@ def __perform_browse_and_add(browser, task_data):
             close_current_tab_and_switch_to_window(browser, tasks_tab)
         finally:
             if successfully_added_products_count > 2:
-                close_current_tab_and_switch_to_window(browser, tasks_tab)
                 logging.info("Products that were added to {} are: {}".format(task_data.identifier_for_logging,
                                                                              ', '.join(task_data.products)))
+                __cleanup(browser, task_data)
+                close_current_tab_and_switch_to_window(browser, tasks_tab)
                 break
+
+
+# Clean up the products from cart/wish list added from the task
+def __cleanup(browser, task_data):
+    if task_data.task_type == Tasks.BROWSE_ADD_3_PRODUCTS_TO_CART:
+        logging.info("Cleaning up the products from the cart added from the task")
+        __cleanup_cart(browser, task_data)
+    else:
+        logging.info("Cleaning up the products from the wish list added from the task")
+        __cleanup_wish_list(browser, task_data)
+
+
+def __cleanup_cart(browser, task_data):
+    open_cart_page(browser)
+    # todo:
+    # - unselect all
+    # - check titles from taks_data.products
+    # - if product is in cart and in taks_data.products, and quantity is greater than 1, then just lower the qty by 1
+    # - if product is in cart and in taks_data.products, and quantity is equal to 1, then just remove the product
+    # - pagination?
+    # - do not close the tab
+
+
+def __cleanup_wish_list(browser, task_data):
+    open_wish_list_page(browser)
