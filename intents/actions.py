@@ -83,6 +83,18 @@ def perform_browse_and_add_to_wish_list(browser):
     __perform_browse_and_add(browser, browse_add_3_products_to_wish_list())
 
 
+# Complete task "Search products and add to cart" and get reward points
+def perform_search_and_add_to_cart(browser):
+    logging.error("This feature is not yet implemented as it does not work properly on the Banggood side.")
+    try:
+        logging.error("Throwing error on purpose")
+        raise NotImplementedError
+    except NotImplementedError:
+        logging.error("Not handling error on purpose")
+        logging.error(traceback.format_exc())  # Print stack trace
+        pass
+
+
 def __perform_browse_and_add(browser, task_data):
     # todo: remember the product name and add it to the list so that we can remove it later on
     tasks_tab = get_current_tab(browser)

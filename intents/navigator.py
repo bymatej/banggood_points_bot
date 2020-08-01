@@ -27,6 +27,13 @@ def open_tasks_page(browser):
     __perform_navigation(browser, "https://www.banggood.com/index.php?bid=28839&com=account&t=vipTaskList#points")
 
 
+def prepare_tasks_page_for_next_task(browser):
+    tasks_page_url = "https://www.banggood.com/index.php?bid=28839&com=account&t=vipTaskList#points"
+    # Check if you are still on tasks page, and if not - reopen the tasks page
+    if tasks_page_url not in browser.current_url:
+        open_tasks_page(browser)
+
+
 def __set_shipto_info(browser):
     # Explicitly switch to desired country and currency
     url_with_shipto_info = "https://www.banggood.com/index.php?com=account&DCC={}&currency={}" \
