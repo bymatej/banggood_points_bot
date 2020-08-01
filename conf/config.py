@@ -16,6 +16,22 @@ def get_password():
     return get_config().get("CredentialsSection", "banggood.password")
 
 
+def get_desired_country():
+    country = get_config().get("ShipToSection", "banggood.shipto")
+    if country is not None:
+        return str(country)
+    else:
+        return "US"
+
+
+def get_desired_currency():
+    currency = get_config().get("ShipToSection", "banggood.currency")
+    if currency is not None:
+        return str(currency)
+    else:
+        return "USD"
+
+
 def get_sleep_time():
     sleep_time = get_config().get("SleepSection", "browser.sleep.time")
     if sleep_time is not None and sleep_time.isnumeric:
