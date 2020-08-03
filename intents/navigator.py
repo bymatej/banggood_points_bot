@@ -2,9 +2,8 @@ import logging
 
 from selenium.webdriver.firefox import webdriver
 
-from conf.config import get_desired_country
-from conf.config import get_desired_currency
-from intents.utils import wait
+from conf import Config
+from intents import Utils
 
 
 class Navigator:
@@ -55,18 +54,18 @@ class Navigator:
     def _set_shipto_info(cls, browser: webdriver.WebDriver):
         # Explicitly switch to desired country and currency
         url_with_shipto_info = "https://www.banggood.com/index.php?com=account&DCC={}&currency={}" \
-            .format(get_desired_country(), get_desired_currency())
+            .format(Config.get_desired_country(), Config.get_desired_currency())
 
         logging.info("\n"
                      "\tSetting country: {} \n"
                      "\tSetting currency: {} \n "
                      "\tWill navigate to URL: {}\n"
-                     .format(get_desired_country(), get_desired_currency(), url_with_shipto_info))
+                     .format(Config.get_desired_country(), Config.get_desired_currency(), url_with_shipto_info))
 
         cls._perform_navigation(browser, url_with_shipto_info)
-        wait()
+        Utils.wait()
 
     @classmethod
     def _perform_navigation(cls, browser: webdriver.WebDriver, url: str):
         browser.get(url)
-        wait()
+        Utils.wait()
