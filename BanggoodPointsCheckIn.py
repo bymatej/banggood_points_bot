@@ -26,23 +26,32 @@ open_login_page(browser)
 # Log in
 log_in(browser)
 
-# Open points page
-open_points_page(browser)
-# Perform check-in
-perform_check_in(browser)
+from intents.subactions import cleanup_cart
+from intents.task.task_type import browse_add_3_products_to_cart
+td = browse_add_3_products_to_cart()
+td.products.append("Xiaomi FIMI X8 SE 2020 8KM FPV With 3-axis Gimbal 4K Camera HDR Video GPS 35mins Flight Time RC Quadcopter RTF One Battery Version")
+td.products.append("LANGFEITE L8S 2019 Version 20.8Ah 48.1V 800W*2 Dual Motor Folding Electric Scooter Color Display DC Brushless Motor 45km/h Top Speed 55km Range EU Plug")
+td.products.append("Xiaomi Redmi Note 8 Pro Global Version 6.53 inch 64MP Quad Rear Camera 6GB 64GB NFC 4500mAh Helio G90T Octa Core 4G Smartphone")
+cleanup_cart(browser, td)
+print("x")
 
-# Open tasks page
-open_tasks_page(browser)
-# Perform tasks
-perform_browse_and_add_to_cart(browser)
-prepare_tasks_page_for_next_task(browser)
-perform_browse_and_add_to_wish_list(browser)
-prepare_tasks_page_for_next_task(browser)
-perform_search_and_add_to_cart(browser)
+# # Open points page
+# open_points_page(browser)
+# # Perform check-in
+# perform_check_in(browser)
+#
+# # Open tasks page
+# open_tasks_page(browser)
+# # Perform tasks
+# perform_browse_and_add_to_cart(browser)
+# prepare_tasks_page_for_next_task(browser)
+# perform_browse_and_add_to_wish_list(browser)
+# prepare_tasks_page_for_next_task(browser)
+# perform_search_and_add_to_cart(browser)
 
 # # Log out
-log_out(browser)
+# log_out(browser)
 # # Close browser
-browser.quit()
+# browser.quit()
 
 logging.info("\n\nThe Bot has finished\n\n")
