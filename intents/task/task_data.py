@@ -9,10 +9,12 @@ Task data containing the following information:
                      from cart/wish list after the task completion
 """
 
+from intents.task import TaskType
+
 
 class TaskData:
 
-    def __init__(self, task_type, main_css_class, identifier_for_logging):
+    def __init__(self, task_type: TaskType, main_css_class: str, identifier_for_logging: str):
         self.task_type = task_type
         self.main_css_class = main_css_class
         self.xpath = f"//li[contains(@class, 'item') and contains(@class, '{main_css_class}')]"

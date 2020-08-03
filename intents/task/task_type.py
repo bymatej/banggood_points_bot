@@ -10,7 +10,7 @@ Types:
 
 import enum
 
-from intents.task.task_data import TaskData
+from intents.task import TaskData
 
 
 class Tasks(enum.Enum):
@@ -19,16 +19,18 @@ class Tasks(enum.Enum):
     SEARCH_ADD_PRODUCTS_TO_CART = 3
 
 
-def browse_add_3_products_to_cart():
-    return TaskData(task_type=Tasks.BROWSE_ADD_3_PRODUCTS_TO_CART, main_css_class="browseAddcart",
-                    identifier_for_logging="cart")
+class TaskType:
+    @staticmethod
+    def browse_add_3_products_to_cart():
+        return TaskData(task_type=Tasks.BROWSE_ADD_3_PRODUCTS_TO_CART, main_css_class="browseAddcart",
+                        identifier_for_logging="cart")
 
+    @staticmethod
+    def browse_add_3_products_to_wish_list():
+        return TaskData(task_type=Tasks.BROWSE_ADD_3_PRODUCTS_TO_WISH_LIST, main_css_class="wishlist",
+                        identifier_for_logging="wish list")
 
-def browse_add_3_products_to_wish_list():
-    return TaskData(task_type=Tasks.BROWSE_ADD_3_PRODUCTS_TO_WISH_LIST, main_css_class="wishlist",
-                    identifier_for_logging="wish list")
-
-
-def search_add_products_to_wish_list():
-    return TaskData(task_type=Tasks.SEARCH_ADD_PRODUCTS_TO_CART, main_css_class="searchAddcart",
-                    identifier_for_logging="cart")
+    @staticmethod
+    def search_add_products_to_wish_list():
+        return TaskData(task_type=Tasks.SEARCH_ADD_PRODUCTS_TO_CART, main_css_class="searchAddcart",
+                        identifier_for_logging="cart")
