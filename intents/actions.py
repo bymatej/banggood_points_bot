@@ -7,11 +7,11 @@ from selenium.common.exceptions import WebDriverException
 from selenium.webdriver.firefox import webdriver
 
 from conf import Config
-from intents.utils import Utils
-from intents.subactions import Subactions
-from intents.task import TaskData
-from intents.task import TaskType
-from intents.task import Tasks
+from intents import Utils
+from intents import Subactions
+from intents.tasks import TaskData
+from intents.tasks import TaskType
+from intents.tasks import Tasks
 
 
 class Actions:
@@ -108,7 +108,7 @@ class Actions:
         successfully_added_products_count = 0
         for li_element in product_li_elements:
             try:
-                if task_data.task_type == Tasks.BROWSE_ADD_3_PRODUCTS_TO_CART:
+                if task_data.task == Tasks.BROWSE_ADD_3_PRODUCTS_TO_CART:
                     Subactions.add_product_to_cart(browser, li_element, task_data)
                 else:
                     Subactions.add_product_to_wish_list(browser, li_element, task_data)
@@ -129,7 +129,7 @@ class Actions:
     # Clean up the products from cart/wish list added from the task
     @classmethod
     def _cleanup(cls, browser: webdriver.WebDriver, task_data: TaskData):
-        if task_data.task_type == Tasks.BROWSE_ADD_3_PRODUCTS_TO_CART:
+        if task_data.task == Tasks.BROWSE_ADD_3_PRODUCTS_TO_CART:
             logging.info("Cleaning up the products from the cart added from the task")
             Subactions.cleanup_cart(browser, task_data)
         else:

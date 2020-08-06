@@ -19,9 +19,10 @@ from selenium.webdriver.support import expected_conditions as ec
 from selenium.webdriver.support.ui import WebDriverWait
 
 from common import ProductAlreadyInWishListException
-from intents import Navigator
-from intents import Utils
-from intents.task import TaskData
+# from intents import Navigator
+# from intents import TaskData
+# from intents import Utils
+import intents.utils
 
 
 class Subactions:
