@@ -102,18 +102,21 @@ def add_product_to_wish_list(browser: webdriver.WebDriver, li_element, task_data
 def cleanup_cart(browser: webdriver.WebDriver, task_data: TaskData):
     open_cart_page(browser)
 
-    product_row_xpath = "//div[contains(@class, 'newcart_main')]//ul[contains(@class, 'newcart_list_items')]"
-    product_link_xpath = "//li[contains(@class, 'newcart_product')]//a[contains(@class, 'title')]"
-    product_quantity_xpath = "//li[contains(@class, 'newcart_quantity')]//div[contains(@class, 'quantity_item')]"
-    product_quantity_minus_xpath = "//a[contains(text(), '-')]"
-    product_options_xpath = "//li[contains(@class, 'newcart_options')]"
+    product_row_xpath = "//div[contains(@class, 'newcart_box')]" \
+                        "//div[contains(@class, 'newcart_main')]" \
+                        "//ul[contains(@class, 'newcart_list_items')]"
+    product_link_xpath = ".//li[contains(@class, 'newcart_product')]//a[contains(@class, 'title')]"
+    product_quantity_xpath = ".//li[contains(@class, 'newcart_quantity')]//div[contains(@class, 'quantity_item')]"
+    product_quantity_minus_xpath = ".//a[contains(text(), '-')]"
+    product_options_xpath = ".//li[contains(@class, 'newcart_options')]"
     product_remove_button_xpath = f"{product_options_xpath}//span[contains(@data-title, 'Remove')]"
     product_remove_modal_xpath = f"{product_options_xpath}//div[contains(@class, 'item_remove_mask')]"
-    product_remove_modal_yes_button_xpath = "//a[contains(@class, 'item_mask_yes')]"
+    product_remove_modal_yes_button_xpath = ".//a[contains(@class, 'item_mask_yes')]"
 
     logging.info("Finding products added from the task in the list of products in cart")
     for product_row in browser.find_elements_by_xpath(product_row_xpath):
         product = product_row.find_element_by_xpath(product_link_xpath).text
+        logging.info(f"Working with product {product}.")
         if product in task_data.products:
             logging.info(f"Product found! It's {product}")
             qty_element = product_row.find_element_by_xpath(product_quantity_xpath)
