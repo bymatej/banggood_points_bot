@@ -100,9 +100,12 @@ def perform_search_and_add_to_cart(browser: webdriver.WebDriver):
 
 def __perform_browse_and_add(browser: webdriver.WebDriver, task_data: TaskData):
     # todo:
-    # - add cleanup method at the end of if statement inside the finally block
-    # - add tasks for cleaning up the wish list and the cart (remove products added in the tasks)
+    # - add cleanup method at the end of if statement inside the finally block - done
+    # - add tasks for cleaning up the wish list and the cart (remove products added in the tasks) - done for cart
     # - write down (in logger) the amount of points before and after each task (and after all tasks)
+    # - refactor from __ to _ in private functions
+    # - refactor tasks package (move all classes into one file and move everything to intents package)
+    # - fill out __init.py__ file(s)
     is_reward_received = find_task_button_and_click_it(browser, task_data)
     if is_reward_received:
         return
