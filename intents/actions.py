@@ -9,7 +9,10 @@ import traceback
 from time import sleep
 
 from selenium.common.exceptions import WebDriverException
+from selenium.webdriver.common.by import By
 from selenium.webdriver.firefox import webdriver
+from selenium.webdriver.support import expected_conditions as ec
+from selenium.webdriver.support.ui import WebDriverWait
 
 from conf.config import get_password
 from conf.config import get_username
@@ -20,7 +23,7 @@ from intents.subactions import cleanup_wish_list
 from intents.subactions import find_task_button_and_click_it
 from intents.subactions import get_list_of_products
 from intents.subactions import switch_to_newly_opened_tab
-from intents.tasks import TaskData
+from intents.tasks import TaskData, search_add_products_to_wish_list
 from intents.tasks import TaskType
 from intents.tasks import browse_add_3_products_to_cart
 from intents.tasks import browse_add_3_products_to_wish_list
@@ -93,14 +96,21 @@ def perform_browse_and_add_to_wish_list(browser: webdriver.WebDriver):
 
 # Complete task "Search products and add to cart" and get reward points
 def perform_search_and_add_to_cart(browser: webdriver.WebDriver):
-    logging.error("This feature is not yet implemented as it does not work properly on the Banggood side.")
-    try:
-        logging.error("Throwing error on purpose")
-        raise NotImplementedError
-    except NotImplementedError:
-        logging.error("Not handling error on purpose")
-        logging.error(traceback.format_exc())  # Print stack trace
-        pass
+    is_reward_received = find_task_button_and_click_it(browser, search_add_products_to_wish_list())
+    if is_reward_received:
+        return
+
+    modal_search_button_xpath = "//div[contains(@class, 'modal') " \
+                                "and contains(@class, 'modal-vipcenter') " \
+                                "and contains(@class, 'modal-searchTocart')]" \
+                                "//div[contains(@class, 'modal-cnt')]" \
+                                "//ul[contains(@class, 'list')]" \
+                                "//li//span//a"
+    WebDriverWait(browser, 10).until(ec.presence_of_element_located((By.XPATH, modal_search_button_xpath)))
+    WebDriverWait(browser, 10).until(ec.element_to_be_clickable((By.XPATH, modal_search_button_xpath)))
+    browser.find_element_by_xpath(modal_search_button_xpath).click()
+
+    # todo: this feature is weird as it redirects to Spanish and Brazilian versions of banggod, and I cannot add to cart
 
 
 def _perform_browse_and_add(browser: webdriver.WebDriver, task_data: TaskData):
