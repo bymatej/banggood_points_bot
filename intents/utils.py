@@ -1,3 +1,7 @@
+"""
+Utility functions required on some actions.
+"""
+
 import logging
 from time import sleep
 
@@ -16,7 +20,7 @@ def open_link_in_new_tab(browser: webdriver.WebDriver, url: str):
     WebDriverWait(browser, 10).until(ec.new_window_is_opened)
 
     logging.info("Switching to newly opened tab")
-    browser.switch_to_window(browser.window_handles[get_last_opened_tab_id(browser)])
+    browser.switch_to.window(browser.window_handles[get_last_opened_tab_id(browser)])
     WebDriverWait(browser, 10).until(ec.url_contains(url))
 
 

@@ -1,3 +1,9 @@
+"""
+Retrieves the data from the configuration file (properties.ini) located in the resources directory.
+Some data is just read from the file and returned, and some has default values. If no value is specified in the
+properties file, the default will be used.
+"""
+
 import configparser
 
 

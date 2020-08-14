@@ -1,3 +1,9 @@
+"""
+Navigator represents the intents to navigate to a certain URL.
+As if the human user would copy/paste the URL into the address bar, the bot does the similar thing.
+In most cases, the bot calls the browser.get(url) from the _perform_navigation function.
+"""
+
 import logging
 
 from selenium.webdriver.firefox import webdriver
@@ -10,21 +16,21 @@ from intents.utils import wait
 # Go to banggood login page, wait for 2 seconds to load, confirm that title contains "login"
 def open_login_page(browser: webdriver.WebDriver):
     logging.info("Opening login page")
-    __perform_navigation(browser, "https://www.banggood.com/login.html")
+    _perform_navigation(browser, "https://www.banggood.com/login.html")
     assert "login" in browser.title.lower()
 
 
 # Go to points page
 def open_points_page(browser: webdriver.WebDriver):
     logging.info("Opening my points page")
-    __set_shipto_info(browser)
-    __perform_navigation(browser, "https://www.banggood.com/index.php?com=account&t=vipClub")
+    _set_shipto_info(browser)
+    _perform_navigation(browser, "https://www.banggood.com/index.php?com=account&t=vipClub")
 
 
 # Go to tasks page
 def open_tasks_page(browser: webdriver.WebDriver):
     logging.info("Opening tasks page")
-    __perform_navigation(browser, "https://www.banggood.com/index.php?bid=28839&com=account&t=vipTaskList#points")
+    _perform_navigation(browser, "https://www.banggood.com/index.php?bid=28839&com=account&t=vipTaskList#points")
 
 
 def prepare_tasks_page_for_next_task(browser: webdriver.WebDriver):
@@ -39,16 +45,16 @@ def prepare_tasks_page_for_next_task(browser: webdriver.WebDriver):
 # Opens cart page
 def open_cart_page(browser: webdriver.WebDriver):
     logging.info("Opening cart page")
-    __perform_navigation(browser, "https://www.banggood.com/shopping_cart.html")
+    _perform_navigation(browser, "https://www.banggood.com/shopping_cart.html")
 
 
 # Opens wish list page
 def open_wish_list_page(browser: webdriver.WebDriver):
     logging.info("Opening wish list page")
-    __perform_navigation(browser, "https://www.banggood.com/index.php?com=account&t=wishlist")
+    _perform_navigation(browser, "https://www.banggood.com/index.php?com=account&t=wishlist")
 
 
-def __set_shipto_info(browser: webdriver.WebDriver):
+def _set_shipto_info(browser: webdriver.WebDriver):
     # Explicitly switch to desired country and currency
     url_with_shipto_info = "https://www.banggood.com/index.php?com=account&DCC={}&currency={}" \
         .format(get_desired_country(), get_desired_currency())
@@ -59,10 +65,10 @@ def __set_shipto_info(browser: webdriver.WebDriver):
                  "\tWill navigate to URL: {}\n"
                  .format(get_desired_country(), get_desired_currency(), url_with_shipto_info))
 
-    __perform_navigation(browser, url_with_shipto_info)
+    _perform_navigation(browser, url_with_shipto_info)
     wait()
 
 
-def __perform_navigation(browser: webdriver.WebDriver, url: str):
+def _perform_navigation(browser: webdriver.WebDriver, url: str):
     browser.get(url)
     wait()

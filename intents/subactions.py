@@ -24,7 +24,7 @@ from selenium.webdriver.support.ui import WebDriverWait
 from common.exceptions import ProductAlreadyInWishListException
 from intents.navigator import open_cart_page
 from intents.navigator import open_wish_list_page
-from intents.task.task_type import TaskData
+from intents.tasks import TaskData
 from intents.utils import close_current_tab
 from intents.utils import open_link_in_new_tab
 from intents.utils import wait
@@ -67,7 +67,7 @@ def get_list_of_products(browser: webdriver.WebDriver):
 
 
 def add_product_to_cart(browser: webdriver.WebDriver, li_element, task_data: TaskData):
-    product_name = __open_product_details_page_and_get_product_name(browser, li_element)
+    product_name = _open_product_details_page_and_get_product_name(browser, li_element)
 
     logging.info("Finding the add to cart button")
     add_to_cart_button_xpath = "/html/body/div[8]/div/div[2]/form/div[5]/div[1]/a[1]"
@@ -81,7 +81,7 @@ def add_product_to_cart(browser: webdriver.WebDriver, li_element, task_data: Tas
 
 
 def add_product_to_wish_list(browser: webdriver.WebDriver, li_element, task_data: TaskData):
-    product_name = __open_product_details_page_and_get_product_name(browser, li_element)
+    product_name = _open_product_details_page_and_get_product_name(browser, li_element)
 
     logging.info("Finding the add to wish list button")
     add_to_wish_list_button_xpath = "//span[contains(@class, 'wish_text')]" \
@@ -102,7 +102,6 @@ def add_product_to_wish_list(browser: webdriver.WebDriver, li_element, task_data
         raise ProductAlreadyInWishListException(product_name)
 
 
-# todo: slice down this large method, add logs and add docs
 def cleanup_cart(browser: webdriver.WebDriver, task_data: TaskData):
     open_cart_page(browser)
 
@@ -110,54 +109,18 @@ def cleanup_cart(browser: webdriver.WebDriver, task_data: TaskData):
                         "//div[contains(@class, 'newcart_main')]" \
                         "//ul[contains(@class, 'newcart_list_items')]"
     product_link_xpath = ".//li[contains(@class, 'newcart_product')]//a[contains(@class, 'title')]"
-    product_quantity_xpath = ".//li[contains(@class, 'newcart_quantity')]//div[contains(@class, 'quantity_item')]"
-    product_quantity_minus_xpath = ".//a[contains(text(), '-')]"
-    product_options_xpath = ".//li[contains(@class, 'newcart_options')]"
-    product_remove_button_xpath = f"{product_options_xpath}//span[contains(@data-title, 'Remove')]"
-    product_remove_modal_xpath = f"{product_options_xpath}//div[contains(@class, 'item_remove_mask')]"
-    product_remove_modal_yes_button_xpath = ".//a[contains(@class, 'item_mask_yes')]"
 
-    logging.info("Finding products added from the task in the list of products in cart")
     products_in_cart = list(map(lambda p: p.find_element_by_xpath(product_link_xpath).text,
                                 browser.find_elements_by_xpath(product_row_xpath)))
 
+    logging.info("Finding products added from the task in the list of products in cart")
     while task_data.products and set(task_data.products).intersection(products_in_cart):
-        print("rolling")
+        print("List of added products and list of products in cart intersect.")
         for product in task_data.products:
             logging.info(f"Working with product {product}.")
 
             try:
-                target_product_link_xpath = f"{product_row_xpath}//li[contains(@class, 'newcart_product')]" \
-                                            f"//a[contains(@class, 'title') and contains(text(), '{product}')]"
-                target_product_link_element = browser.find_element_by_xpath(target_product_link_xpath)
-                product_row_ancestor_xpath = ".//ancestor::ul[contains(@class, 'newcart_list_items')]"
-                product_row_element = target_product_link_element.find_element_by_xpath(product_row_ancestor_xpath)
-
-                browser.execute_script("arguments[0].scrollIntoView();", product_row_element)
-                actions = ActionChains(browser)
-                actions.move_to_element(product_row_element).perform()
-
-                if product in task_data.products:
-                    logging.info(f"Product found! It's {product}")
-                    qty_element = product_row_element.find_element_by_xpath(product_quantity_xpath)
-                    quantity = int(qty_element.find_element_by_tag_name("input").get_attribute("value"))
-                    if quantity > 1:
-                        logging.info(f"Decreasing qty for product {product} from {quantity} to {quantity - 1}")
-                        qty_element.find_element_by_xpath(product_quantity_minus_xpath).click()
-                        wait()
-                    else:
-                        logging.info(f"Removing product {product} from cart.")
-                        WebDriverWait(browser, 10). \
-                            until(ec.presence_of_element_located((By.XPATH, product_remove_button_xpath)))
-                        WebDriverWait(browser, 10). \
-                            until(ec.element_to_be_clickable((By.XPATH, product_remove_button_xpath)))
-                        product_row_element.find_element_by_xpath(product_remove_button_xpath).click()
-                        wait()
-                        product_row_element.find_element_by_xpath(product_remove_modal_xpath) \
-                            .find_element_by_xpath(product_remove_modal_yes_button_xpath) \
-                            .click()
-                        wait()
-                    task_data.products.remove(product)
+                _remove_one_product_from_cart(browser, task_data, product_row_xpath, product)
                 logging.info(f"Done with product {product}. Moving on...")
                 break
             except NoSuchElementException:
@@ -175,7 +138,7 @@ def cleanup_wish_list(browser: webdriver.WebDriver, task_data: TaskData):
     open_wish_list_page(browser)
 
 
-def __open_product_details_page_and_get_product_name(browser: webdriver.WebDriver, li_element):
+def _open_product_details_page_and_get_product_name(browser: webdriver.WebDriver, li_element):
     logging.info("Finding the link and opening the product details page from the list of products")
     WebDriverWait(browser, 10).until(ec.presence_of_element_located((By.CLASS_NAME, "img")))
     product_main_div_element = li_element.find_element_by_class_name("main")
@@ -202,7 +165,9 @@ def _continue_shopping(browser: webdriver.WebDriver, task_data: TaskData, produc
                                      "//a[(contains(translate(text(), " \
                                      "'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz'), " \
                                      "'continue shopping'))]"
+    wait()  # Wait a little longer to ensure the popup is presented
     WebDriverWait(browser, 10).until(ec.presence_of_element_located((By.XPATH, continue_shopping_button_xpath)))
+    WebDriverWait(browser, 10).until(ec.element_to_be_clickable((By.XPATH, continue_shopping_button_xpath)))
     browser.find_element_by_xpath(continue_shopping_button_xpath).click()
     wait()
 
@@ -230,3 +195,45 @@ def _receive_reward(browser: webdriver.WebDriver, task_data: TaskData):
         logging.info("Receiving points for completing the task")
     else:
         logging.info("The \"Receive it\" button is not displayed. Not clicking on anything...")
+
+
+def _remove_one_product_from_cart(browser: webdriver.WebDriver, task_data: TaskData, product_row_xpath: str,
+                                  product: str):
+    product_quantity_xpath = ".//li[contains(@class, 'newcart_quantity')]//div[contains(@class, 'quantity_item')]"
+    product_quantity_minus_xpath = ".//a[contains(text(), '-')]"
+    product_options_xpath = ".//li[contains(@class, 'newcart_options')]"
+    product_remove_button_xpath = f"{product_options_xpath}//span[contains(@data-title, 'Remove')]"
+    product_remove_modal_xpath = f"{product_options_xpath}//div[contains(@class, 'item_remove_mask')]"
+    product_remove_modal_yes_button_xpath = ".//a[contains(@class, 'item_mask_yes')]"
+    target_product_link_xpath = f"{product_row_xpath}//li[contains(@class, 'newcart_product')]" \
+                                f"//a[contains(@class, 'title') and contains(text(), '{product}')]"
+    target_product_link_element = browser.find_element_by_xpath(target_product_link_xpath)
+    product_row_ancestor_xpath = ".//ancestor::ul[contains(@class, 'newcart_list_items')]"
+    product_row_element = target_product_link_element.find_element_by_xpath(product_row_ancestor_xpath)
+
+    logging.info("Scrolling the product row into view...")
+    browser.execute_script("arguments[0].scrollIntoView();", product_row_element)
+    actions = ActionChains(browser)
+    actions.move_to_element(product_row_element).perform()
+
+    if product in task_data.products:
+        logging.info(f"Product found! It's {product}")
+        qty_element = product_row_element.find_element_by_xpath(product_quantity_xpath)
+        quantity = int(qty_element.find_element_by_tag_name("input").get_attribute("value"))
+        if quantity > 1:
+            logging.info(f"Decreasing qty for product {product} from {quantity} to {quantity - 1}")
+            qty_element.find_element_by_xpath(product_quantity_minus_xpath).click()
+            wait()
+        else:
+            logging.info(f"Removing product {product} from cart.")
+            WebDriverWait(browser, 10). \
+                until(ec.presence_of_element_located((By.XPATH, product_remove_button_xpath)))
+            WebDriverWait(browser, 10). \
+                until(ec.element_to_be_clickable((By.XPATH, product_remove_button_xpath)))
+            product_row_element.find_element_by_xpath(product_remove_button_xpath).click()
+            wait()
+            product_row_element.find_element_by_xpath(product_remove_modal_xpath) \
+                .find_element_by_xpath(product_remove_modal_yes_button_xpath) \
+                .click()
+            wait()
+        task_data.products.remove(product)
