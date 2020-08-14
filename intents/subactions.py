@@ -18,6 +18,7 @@ from selenium.common.exceptions import NoSuchElementException
 from selenium.webdriver.common.action_chains import ActionChains
 from selenium.webdriver.common.by import By
 from selenium.webdriver.firefox import webdriver
+from selenium.webdriver.remote.webelement import WebElement
 from selenium.webdriver.support import expected_conditions as ec
 from selenium.webdriver.support.ui import WebDriverWait
 
@@ -137,6 +138,21 @@ def cleanup_cart(browser: webdriver.WebDriver, task_data: TaskData):
 def cleanup_wish_list(browser: webdriver.WebDriver, task_data: TaskData):
     open_wish_list_page(browser)
 
+    for product in task_data.products:
+        logging.info(f"Working with product {product}")
+        search_input_field_element = _search_for_product_in_wish_list_and_get_input_field_element(browser, product)
+
+        try:
+            _remove_one_product_from_wish_list(browser, product)
+        except NoSuchElementException:
+            logging.error(f"Product {product} not found in wish list. It was probably already deleted. Moving on...")
+            logging.error(traceback.format_exc())
+        finally:
+            task_data.products.remove(product)
+            logging.info("Clearing text in input field")
+            search_input_field_element.clear()
+            wait()
+
 
 def _open_product_details_page_and_get_product_name(browser: webdriver.WebDriver, li_element):
     logging.info("Finding the link and opening the product details page from the list of products")
@@ -237,3 +253,62 @@ def _remove_one_product_from_cart(browser: webdriver.WebDriver, task_data: TaskD
                 .click()
             wait()
         task_data.products.remove(product)
+
+
+def _search_for_product_in_wish_list_and_get_input_field_element(browser: webdriver.WebDriver,
+                                                                 product: str) -> WebElement:
+    logging.info("Finding the search button and clicking on it.")
+
+    if "+" in product:
+        logging.info("Invalid character '+' detected.")
+        product = product.split("+")[0]
+        logging.warning(f"Using {product} in the search. Potentially the wrong product can be returned...")
+        logging.info(f"This hack was necessary as Banggood search on wish lists does not allow '+' character")
+
+    search_component_xpath = "//li[contains(@class, 'wishlist-nav-search')]"
+    search_span_xpath = f"{search_component_xpath}//span[contains(@class, 'search-inner')]"
+    search_button_xpath = f"{search_span_xpath}" \
+                          f"//span[contains(@class, 'icon-search_new') and contains(@class, 'search-btn')]"
+    search_input_field_xpath = f"{search_span_xpath}//input[contains(@class, 'search-text')]"
+
+    logging.info("Clicking on a search button to activate the input field")
+    WebDriverWait(browser, 10).until(ec.presence_of_element_located((By.XPATH, search_button_xpath)))
+    WebDriverWait(browser, 10).until(ec.element_to_be_clickable((By.XPATH, search_button_xpath)))
+    browser.find_element_by_xpath(search_button_xpath).click()
+    logging.info("Filling out the input field")
+    WebDriverWait(browser, 10).until(ec.presence_of_element_located((By.XPATH, search_input_field_xpath)))
+    WebDriverWait(browser, 10).until(ec.element_to_be_clickable((By.XPATH, search_input_field_xpath)))
+    search_input_field_element = browser.find_element_by_xpath(search_input_field_xpath)
+    search_input_field_element.send_keys(product)
+    logging.info("Clicking on a search button again to perform the search")
+    browser.find_element_by_xpath(search_button_xpath).click()
+    wait()
+
+    return search_input_field_element
+
+
+def _remove_one_product_from_wish_list(browser: webdriver.WebDriver, product: str):
+    delete_core_xpath = "//div[contains(@class, 'wishlist-product')]" \
+                        "//div[contains(@class, 'product-cnt')]" \
+                        "//ul[contains(@class, 'product-list') and contains(@class, 'cf')]"
+    delete_button_xpath = f"{delete_core_xpath}" \
+                          f"//span[contains(@class, 'options')]//span[contains(@class, 'options-remove')]//i"
+    delete_popup_yes_xpath = f"{delete_core_xpath}" \
+                             f"//span[contains(@class, 'remove-pop')]//p[contains(@class, 'p-btn')]" \
+                             f"//span[contains(@class, 'p-btn-yes')]"
+    logging.info("Hovering over the product to render the delete button")
+    product_element = browser.find_element_by_xpath(f"{delete_core_xpath}//li")
+    browser.execute_script("arguments[0].scrollIntoView();", product_element)
+    actions = ActionChains(browser)
+    actions.move_to_element(product_element).perform()
+    logging.info("Clicking on delete button")
+    WebDriverWait(browser, 10).until(ec.presence_of_element_located((By.XPATH, delete_button_xpath)))
+    WebDriverWait(browser, 10).until(ec.element_to_be_clickable((By.XPATH, delete_button_xpath)))
+    browser.find_element_by_xpath(delete_button_xpath).click()
+    wait()
+    logging.info("Confirming deletion")
+    WebDriverWait(browser, 10).until(ec.presence_of_element_located((By.XPATH, delete_popup_yes_xpath)))
+    WebDriverWait(browser, 10).until(ec.element_to_be_clickable((By.XPATH, delete_popup_yes_xpath)))
+    browser.find_element_by_xpath(delete_popup_yes_xpath).click()
+    wait()
+    logging.info(f"Product {product} deleted successfully from the wish list")
