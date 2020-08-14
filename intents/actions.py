@@ -1,20 +1,29 @@
+"""
+Actions represent the actions that the bot needs to complete in order to finish the tasks.
+Example of those actions are logging in, logging out, finishing the banggood tasks, etc.
+"""
+
 import logging
 import re
 import traceback
 from time import sleep
 
 from selenium.common.exceptions import WebDriverException
+from selenium.webdriver.firefox import webdriver
 
 from conf.config import get_password
 from conf.config import get_username
 from intents.subactions import add_product_to_cart
 from intents.subactions import add_product_to_wish_list
+from intents.subactions import cleanup_cart
+from intents.subactions import cleanup_wish_list
 from intents.subactions import find_task_button_and_click_it
 from intents.subactions import get_list_of_products
 from intents.subactions import switch_to_newly_opened_tab
-from intents.task.task_type import Tasks
-from intents.task.task_type import browse_add_3_products_to_cart
-from intents.task.task_type import browse_add_3_products_to_wish_list
+from intents.tasks import TaskData
+from intents.tasks import TaskType
+from intents.tasks import browse_add_3_products_to_cart
+from intents.tasks import browse_add_3_products_to_wish_list
 from intents.utils import close_current_tab_and_switch_to_window
 from intents.utils import get_current_tab
 from intents.utils import wait
@@ -25,7 +34,7 @@ logging.basicConfig(level=logging.INFO)
 
 
 # Log in
-def log_in(browser):
+def log_in(browser: webdriver.WebDriver):
     logging.info("Getting email input field in the login form")
     email_login_input_field = browser.find_element_by_xpath("/html/body/div[1]/div/form[1]/ul/li[1]/label/div/input")
 
@@ -43,7 +52,7 @@ def log_in(browser):
 
 
 # Log out
-def log_out(browser):
+def log_out(browser: webdriver.WebDriver):
     # Sign out
     logging.info("Logging out")
     browser.get("https://www.banggood.com/")
@@ -52,7 +61,7 @@ def log_out(browser):
 
 
 # Perform daily check-in
-def perform_check_in(browser):
+def perform_check_in(browser: webdriver.WebDriver):
     logging.info("Clicking the check-in button (in sidebar)")
     browser.find_element_by_xpath("//*[contains(text(), 'Check-in')]").click()
 
@@ -73,17 +82,17 @@ def perform_check_in(browser):
 
 
 # Complete task "Browse and add 3 products to cart" and get reward points
-def perform_browse_and_add_to_cart(browser):
-    __perform_browse_and_add(browser, browse_add_3_products_to_cart())
+def perform_browse_and_add_to_cart(browser: webdriver.WebDriver):
+    _perform_browse_and_add(browser, browse_add_3_products_to_cart())
 
 
 # Complete task "Browse and add 3 products to wish list" and get reward points
-def perform_browse_and_add_to_wish_list(browser):
-    __perform_browse_and_add(browser, browse_add_3_products_to_wish_list())
+def perform_browse_and_add_to_wish_list(browser: webdriver.WebDriver):
+    _perform_browse_and_add(browser, browse_add_3_products_to_wish_list())
 
 
 # Complete task "Search products and add to cart" and get reward points
-def perform_search_and_add_to_cart(browser):
+def perform_search_and_add_to_cart(browser: webdriver.WebDriver):
     logging.error("This feature is not yet implemented as it does not work properly on the Banggood side.")
     try:
         logging.error("Throwing error on purpose")
@@ -94,24 +103,24 @@ def perform_search_and_add_to_cart(browser):
         pass
 
 
-def __perform_browse_and_add(browser, task_data):
+def _perform_browse_and_add(browser: webdriver.WebDriver, task_data: TaskData):
     # todo:
-    # - add cleanup method at the end of if statement inside the finally block
-    # - add tasks for cleaning up the wish list and the cart (remove products added in the tasks)
+    # - wrap each task in try/catch and if a task fails don't let the app fail, but just move to the next task
     # - write down (in logger) the amount of points before and after each task (and after all tasks)
-    tasks_tab = get_current_tab(browser)
-
+    # - fill out __init.py__ file(s)
+    # - refactor imports if necessary
     is_reward_received = find_task_button_and_click_it(browser, task_data)
     if is_reward_received:
         return
 
+    tasks_tab = get_current_tab(browser)
     switch_to_newly_opened_tab(browser, tasks_tab)
     product_li_elements = get_list_of_products(browser)
 
     successfully_added_products_count = 0
     for li_element in product_li_elements:
         try:
-            if task_data.task_type == Tasks.BROWSE_ADD_3_PRODUCTS_TO_CART:
+            if task_data.task_type == TaskType.BROWSE_ADD_3_PRODUCTS_TO_CART:
                 add_product_to_cart(browser, li_element, task_data)
             else:
                 add_product_to_wish_list(browser, li_element, task_data)
@@ -123,7 +132,18 @@ def __perform_browse_and_add(browser, task_data):
             close_current_tab_and_switch_to_window(browser, tasks_tab)
         finally:
             if successfully_added_products_count > 2:
-                close_current_tab_and_switch_to_window(browser, tasks_tab)
                 logging.info("Products that were added to {} are: {}".format(task_data.identifier_for_logging,
                                                                              ', '.join(task_data.products)))
+                _cleanup(browser, task_data)
+                close_current_tab_and_switch_to_window(browser, tasks_tab)
                 break
+
+
+# Clean up the products from cart/wish list added from the task
+def _cleanup(browser: webdriver.WebDriver, task_data: TaskData):
+    if task_data.task_type == TaskType.BROWSE_ADD_3_PRODUCTS_TO_CART:
+        logging.info("Cleaning up the products from the cart added from the task")
+        cleanup_cart(browser, task_data)
+    else:
+        logging.info("Cleaning up the products from the wish list added from the task")
+        cleanup_wish_list(browser, task_data)

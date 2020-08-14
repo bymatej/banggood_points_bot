@@ -40,9 +40,9 @@ perform_browse_and_add_to_wish_list(browser)
 prepare_tasks_page_for_next_task(browser)
 perform_search_and_add_to_cart(browser)
 
-# # Log out
+# Log out
 log_out(browser)
-# # Close browser
+# Close browser
 browser.quit()
 
 logging.info("\n\nThe Bot has finished\n\n")
