@@ -23,6 +23,12 @@ def open_login_page(browser: webdriver.WebDriver):
 # Go to points page
 def open_points_page(browser: webdriver.WebDriver):
     logging.info("Opening my points page")
+    _perform_navigation(browser, "https://www.banggood.com/index.php?com=account&t=points")
+
+
+# Go to account page
+def open_my_account_page(browser: webdriver.WebDriver):
+    logging.info("Opening my account page")
     _set_shipto_info(browser)
     _perform_navigation(browser, "https://www.banggood.com/index.php?com=account&t=vipClub")
 
