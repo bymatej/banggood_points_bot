@@ -103,6 +103,26 @@ def perform_search_and_add_to_cart(browser: webdriver.WebDriver):
         pass
 
 
+# Check the amount of points
+def get_current_amount_of_points(browser: webdriver.WebDriver, is_before_tasks: bool):
+    available_points_div_xpath = "//div[contains(@class, 'myaccount-points-total')]" \
+                                 "//ul//li//div[contains(@class, 'number')]"
+    points_xpath = f"{available_points_div_xpath}//p[contains(@class, 'num-p')]"
+    cash_xpath = f"{available_points_div_xpath}//span[contains(@class, 'cash')]"
+
+    when = "after"
+    if is_before_tasks:
+        when = "before"
+
+    points = int(browser.find_element_by_xpath(points_xpath).text)
+    cash = browser.find_element_by_xpath(cash_xpath).text
+    logging.info("\n\n")
+    logging.info(f"\n\nPoints {when} check-in and tasks are completed: {points}")
+    logging.info(f"Cash {when} check-in and tasks are completed: {cash}\n")
+
+    return points
+
+
 def _perform_browse_and_add(browser: webdriver.WebDriver, task_data: TaskData):
     # todo:
     # - wrap each task in try/catch and if a task fails don't let the app fail, but just move to the next task

@@ -1,9 +1,12 @@
 # banggood_points_bot
-Bot that automatically checks in to BangGood and collects points
+Bot that automatically logs into Banggood and checks in and performs tasks to reward points.
 
+# How it works
+## Technology stack
+Technology stack is Python, Selenium and a Firefox web driver.
 
-# Prereq
-`pip install selenium`
+# Prerequisites
+`pip install -r app/requirements.txt`
 
 driver placed in `/usr/bin`
 
