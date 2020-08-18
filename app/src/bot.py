@@ -1,6 +1,7 @@
 import logging
 
 from selenium import webdriver
+from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
 from selenium.webdriver.firefox.options import Options
 
 from intents.actions import get_current_amount_of_points
@@ -19,9 +20,11 @@ from intents.navigator import prepare_tasks_page_for_next_task
 logging.info("\n\nThe Bot has started\n\n")
 
 # Open Firefox browser
+capabilities = DesiredCapabilities().FIREFOX
+capabilities["marionette"] = True
 options = Options()
 options.headless = False  # todo: change to True when everything is finished
-browser = webdriver.Firefox(options=options)
+browser = webdriver.Firefox(capabilities=capabilities, options=options)
 browser.implicitly_wait(10)  # wait 10 seconds for all DOM elements
 # Open log-in page
 open_login_page(browser)

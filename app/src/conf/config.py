@@ -10,28 +10,28 @@ import configparser
 import os
 
 
-def get_config():
+def get_config() -> configparser.RawConfigParser:
     filename = "resources/properties.ini"
     config = configparser.RawConfigParser()
     config.read(filename)
     return config
 
 
-def get_username():
+def get_username() -> str:
     if "BANGGOOD_USERNAME" in os.environ:
         return os.environ.get("BANGGOOD_USERNAME")
     else:
         return get_config().get("CredentialsSection", "banggood.username")
 
 
-def get_password():
+def get_password() -> str:
     if "BANGGOOD_PASSWORD" in os.environ:
         return os.environ.get("BANGGOOD_PASSWORD")
     else:
         return get_config().get("CredentialsSection", "banggood.password")
 
 
-def get_desired_country():
+def get_desired_country() -> str:
     if "BANGGOOD_SHIPTO" in os.environ:
         return os.environ.get("BANGGOOD_SHIPTO")
     else:
@@ -42,7 +42,7 @@ def get_desired_country():
             return "US"
 
 
-def get_desired_currency():
+def get_desired_currency() -> str:
     if "BANGGOOD_CURRENCY" in os.environ:
         return os.environ.get("BANGGOOD_CURRENCY")
     else:
@@ -53,9 +53,9 @@ def get_desired_currency():
             return "USD"
 
 
-def get_sleep_time():
-    if "BROWSER_SLEEP" in os.environ:
-        return os.environ.get("BROWSER_SLEEP")
+def get_sleep_time() -> int:
+    if "BROWSER_SLEEP" in os.environ and os.environ.get("BROWSER_SLEEP").isdecimal():
+        return int(os.environ.get("BROWSER_SLEEP"))
     else:
         sleep_time = get_config().get("SleepSection", "browser.sleep.time")
         if sleep_time is not None and sleep_time.isnumeric:

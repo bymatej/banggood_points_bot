@@ -46,7 +46,7 @@ def get_current_tab(browser: webdriver.WebDriver):
     return browser.current_window_handle
 
 
-def get_last_opened_tab_id(browser: webdriver.WebDriver):
+def get_last_opened_tab_id(browser: webdriver.WebDriver) -> int:
     return len(browser.window_handles) - 1
 
 

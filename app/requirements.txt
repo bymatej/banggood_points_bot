@@ -1,5 +1,2 @@
 # Install prerequisites
 selenium >= 3.141.0
-webdrivermanager >= 0.8.0
-#webdriver-manager >= 3.2.1
-#https://pypi.org/project/webdriver-manager/#description
