@@ -26,6 +26,7 @@ from intents.tasks import browse_add_3_products_to_cart
 from intents.tasks import browse_add_3_products_to_wish_list
 from intents.utils import close_current_tab_and_switch_to_window
 from intents.utils import get_current_tab
+from intents.utils import scroll_to_and_hover_over_element
 from intents.utils import wait
 
 # todo: replace this with a better way of logging (to file and console) and with log rotation
@@ -62,23 +63,29 @@ def log_out(browser: webdriver.WebDriver):
 
 # Perform daily check-in
 def perform_check_in(browser: webdriver.WebDriver):
-    logging.info("Clicking the check-in button (in sidebar)")
-    browser.find_element_by_xpath("//*[contains(text(), 'Check-in')]").click()
+    logging.info("Hovering over the check-in button (in sidebar)")
+    sidebar_check_in_div_xpath = "//div[contains(@class, 'aside-wrap')]" \
+                                 "//div[contains(@class, 'aside') and contains(@class, 'check-in')]"
+    sidebar_check_in_button_xpath = f"{sidebar_check_in_div_xpath}//p[contains(text(), 'Check-in')]"
+    sidebar_check_in_div_element = browser.find_element_by_xpath(sidebar_check_in_div_xpath)
+    sidebar_check_in_button_element = browser.find_element_by_xpath(sidebar_check_in_button_xpath)
+    scroll_to_and_hover_over_element(browser, sidebar_check_in_button_element)
 
     logging.info("Getting the button from the popup")
-    check_in_button = browser.find_element_by_xpath("/html/body/div[1]/div[9]/div[2]/div/div[2]")
-    if check_in_button.text.lower() == "check-in":
+    check_in_button_xpath = "//div[contains(@class, 'check-btn') and contains(@class, 'J-check-in')]"
+    check_in_button_element = sidebar_check_in_div_element.find_element_by_xpath(check_in_button_xpath)
+    if check_in_button_element.text.lower() == "check-in":
         logging.info("Clicking the check-in button")
-        check_in_button.click()
+        check_in_button_element.click()
         sleep(2)  # The get_sleep_time() method is not used as it always needs ~2 seconds here to view the popup
-        # Click on the button on popup to close it
-        browser.find_element_by_xpath("//*[contains(text(), 'OK, I know')]").click()
-        logging.info("Check-in was successful")
+        # # Click on the button on popup to close it
+        # browser.find_element_by_xpath("//*[contains(text(), 'OK, I know')]").click()
+        # logging.info("Check-in was successful")
     else:
         # Get time left for the next check-in
-        logging.info("Not clicking a button. The text in the button was {}. Moving on".format(check_in_button.text))
-        next_check_in = browser.find_element_by_class_name("countdown").text
-        logging.info("Next check-in in: {}".format(re.search('(Restart In: )(.*)', next_check_in).group(2)))
+        logging.info(f"Not clicking a button. The text in the button was {check_in_button_element.text}. Moving on")
+        next_check_in = sidebar_check_in_div_element.find_element_by_class_name("countdown").text
+        logging.info(f"Next check-in in: {re.search('(Restart In: )(.*)', next_check_in).group(2)}")
 
 
 # Complete task "Browse and add 3 products to cart" and get reward points
@@ -104,21 +111,21 @@ def perform_search_and_add_to_cart(browser: webdriver.WebDriver):
 
 
 # Check the amount of points
-def get_current_amount_of_points(browser: webdriver.WebDriver, is_before_tasks: bool):
+def get_current_amount_of_points(browser: webdriver.WebDriver, is_tasks_finished: bool):
     available_points_div_xpath = "//div[contains(@class, 'myaccount-points-total')]" \
                                  "//ul//li//div[contains(@class, 'number')]"
     points_xpath = f"{available_points_div_xpath}//p[contains(@class, 'num-p')]"
     cash_xpath = f"{available_points_div_xpath}//span[contains(@class, 'cash')]"
 
-    when = "after"
-    if is_before_tasks:
-        when = "before"
+    when = "before"
+    if is_tasks_finished:
+        when = "after"
 
     points = int(browser.find_element_by_xpath(points_xpath).text)
     cash = browser.find_element_by_xpath(cash_xpath).text
     logging.info("\n\n")
-    logging.info(f"\n\nPoints {when} check-in and tasks are completed: {points}")
-    logging.info(f"Cash {when} check-in and tasks are completed: {cash}\n")
+    logging.info(f"\n\nPoints {when} all tasks are completed: {points}")
+    logging.info(f"Cash {when} all tasks are completed: {cash}\n")
 
     return points
 

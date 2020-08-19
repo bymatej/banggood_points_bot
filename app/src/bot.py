@@ -15,7 +15,6 @@ from intents.navigator import open_login_page
 from intents.navigator import open_my_account_page
 from intents.navigator import open_points_page
 from intents.navigator import open_tasks_page
-from intents.navigator import prepare_tasks_page_for_next_task
 
 logging.info("\n\nThe Bot has started\n\n")
 
@@ -31,29 +30,33 @@ open_login_page(browser)
 # Log in
 log_in(browser)
 
-# Open points page
-open_points_page(browser)
-# Check points
-points_before = get_current_amount_of_points(browser, True)
 
-# Open points page
+# Open points page and check points
+def _get_points() -> int:
+    open_points_page(browser)
+    return get_current_amount_of_points(browser, False)
+
+
+points_before = _get_points()
+
+# Open points page and perform check-in, open points page and check points
 open_my_account_page(browser)
-# Perform check-in
 perform_check_in(browser)
+open_points_page(browser)
+get_current_amount_of_points(browser, False)
 
-# Open tasks page
+# Open tasks page and perform tasks, open points page and check points after each task
 open_tasks_page(browser)
-# Perform tasks
 perform_browse_and_add_to_cart(browser)
-prepare_tasks_page_for_next_task(browser)
+_get_points()
+open_tasks_page(browser)
 perform_browse_and_add_to_wish_list(browser)
-prepare_tasks_page_for_next_task(browser)
+_get_points()
+open_tasks_page(browser)
 perform_search_and_add_to_cart(browser)
 
-# Open points page
-open_points_page(browser)
-# Check points
-points_after = get_current_amount_of_points(browser, False)
+# Open points page and check points
+points_after = _get_points()
 points_earned = points_after - points_before
 logging.info(f"Earned {points_earned} points!")
 

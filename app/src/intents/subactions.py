@@ -15,7 +15,6 @@ import logging
 import traceback
 
 from selenium.common.exceptions import NoSuchElementException
-from selenium.webdriver.common.action_chains import ActionChains
 from selenium.webdriver.common.by import By
 from selenium.webdriver.firefox import webdriver
 from selenium.webdriver.remote.webelement import WebElement
@@ -28,6 +27,7 @@ from intents.navigator import open_wish_list_page
 from intents.tasks import TaskData
 from intents.utils import close_current_tab
 from intents.utils import open_link_in_new_tab
+from intents.utils import scroll_to_and_hover_over_element
 from intents.utils import wait
 
 
@@ -116,7 +116,7 @@ def cleanup_cart(browser: webdriver.WebDriver, task_data: TaskData):
 
     logging.info("Finding products added from the task in the list of products in cart")
     while task_data.products and set(task_data.products).intersection(products_in_cart):
-        print("List of added products and list of products in cart intersect.")
+        logging.info("List of added products and list of products in cart intersect.")
         for product in task_data.products:
             logging.info(f"Working with product {product}.")
 
@@ -227,10 +227,7 @@ def _remove_one_product_from_cart(browser: webdriver.WebDriver, task_data: TaskD
     product_row_ancestor_xpath = ".//ancestor::ul[contains(@class, 'newcart_list_items')]"
     product_row_element = target_product_link_element.find_element_by_xpath(product_row_ancestor_xpath)
 
-    logging.info("Scrolling the product row into view...")
-    browser.execute_script("arguments[0].scrollIntoView();", product_row_element)
-    actions = ActionChains(browser)
-    actions.move_to_element(product_row_element).perform()
+    scroll_to_and_hover_over_element(browser, product_row_element)
 
     if product in task_data.products:
         logging.info(f"Product found! It's {product}")
@@ -274,12 +271,16 @@ def _search_for_product_in_wish_list_and_get_input_field_element(browser: webdri
     logging.info("Clicking on a search button to activate the input field")
     WebDriverWait(browser, 10).until(ec.presence_of_element_located((By.XPATH, search_button_xpath)))
     WebDriverWait(browser, 10).until(ec.element_to_be_clickable((By.XPATH, search_button_xpath)))
-    browser.find_element_by_xpath(search_button_xpath).click()
+    search_button_element = browser.find_element_by_xpath(search_button_xpath)
+    scroll_to_and_hover_over_element(search_button_element)
+    search_button_element.click()
+
     logging.info("Filling out the input field")
     WebDriverWait(browser, 10).until(ec.presence_of_element_located((By.XPATH, search_input_field_xpath)))
     WebDriverWait(browser, 10).until(ec.element_to_be_clickable((By.XPATH, search_input_field_xpath)))
     search_input_field_element = browser.find_element_by_xpath(search_input_field_xpath)
     search_input_field_element.send_keys(product)
+
     logging.info("Clicking on a search button again to perform the search")
     browser.find_element_by_xpath(search_button_xpath).click()
     wait()
@@ -296,19 +297,20 @@ def _remove_one_product_from_wish_list(browser: webdriver.WebDriver, product: st
     delete_popup_yes_xpath = f"{delete_core_xpath}" \
                              f"//span[contains(@class, 'remove-pop')]//p[contains(@class, 'p-btn')]" \
                              f"//span[contains(@class, 'p-btn-yes')]"
-    logging.info("Hovering over the product to render the delete button")
+
     product_element = browser.find_element_by_xpath(f"{delete_core_xpath}//li")
-    browser.execute_script("arguments[0].scrollIntoView();", product_element)
-    actions = ActionChains(browser)
-    actions.move_to_element(product_element).perform()
+    scroll_to_and_hover_over_element(browser, product_element)
+
     logging.info("Clicking on delete button")
     WebDriverWait(browser, 10).until(ec.presence_of_element_located((By.XPATH, delete_button_xpath)))
     WebDriverWait(browser, 10).until(ec.element_to_be_clickable((By.XPATH, delete_button_xpath)))
     browser.find_element_by_xpath(delete_button_xpath).click()
     wait()
+
     logging.info("Confirming deletion")
     WebDriverWait(browser, 10).until(ec.presence_of_element_located((By.XPATH, delete_popup_yes_xpath)))
     WebDriverWait(browser, 10).until(ec.element_to_be_clickable((By.XPATH, delete_popup_yes_xpath)))
     browser.find_element_by_xpath(delete_popup_yes_xpath).click()
     wait()
+
     logging.info(f"Product {product} deleted successfully from the wish list")

@@ -5,7 +5,9 @@ Utility functions required on some actions.
 import logging
 from time import sleep
 
+from selenium.webdriver import ActionChains
 from selenium.webdriver.firefox import webdriver
+from selenium.webdriver.remote.webelement import WebElement
 from selenium.webdriver.support import expected_conditions as ec
 from selenium.webdriver.support.ui import WebDriverWait
 
@@ -54,3 +56,10 @@ def wait():
     seconds_to_sleep = get_sleep_time()
     logging.info("Waiting for {} seconds".format(seconds_to_sleep))
     sleep(seconds_to_sleep)
+
+
+def scroll_to_and_hover_over_element(browser: webdriver.WebDriver, element: WebElement):
+    logging.info(f"Scrolling to and hovering over element {element}")
+    browser.execute_script("arguments[0].scrollIntoView();", element)
+    actions = ActionChains(browser)
+    actions.move_to_element(element).perform()

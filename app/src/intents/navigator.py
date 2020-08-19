@@ -39,15 +39,6 @@ def open_tasks_page(browser: webdriver.WebDriver):
     _perform_navigation(browser, "https://www.banggood.com/index.php?bid=28839&com=account&t=vipTaskList#points")
 
 
-def prepare_tasks_page_for_next_task(browser: webdriver.WebDriver):
-    logging.info("Opening tasks page if it is not already open")
-    tasks_page_url = "https://www.banggood.com/index.php?bid=28839&com=account&t=vipTaskList#points"
-    # Check if you are still on tasks page, and if not - reopen the tasks page
-    if tasks_page_url not in browser.current_url:
-        logging.info("Task page was not opened")
-        open_tasks_page(browser)
-
-
 # Opens cart page
 def open_cart_page(browser: webdriver.WebDriver):
     logging.info("Opening cart page")
