@@ -5,7 +5,9 @@ In most cases, the bot calls the browser.get(url) from the _perform_navigation f
 """
 
 import logging
+import traceback
 
+from selenium.common.exceptions import WebDriverException
 from selenium.webdriver.firefox import webdriver
 
 from conf.config import get_desired_country
@@ -67,5 +69,9 @@ def _set_shipto_info(browser: webdriver.WebDriver):
 
 
 def _perform_navigation(browser: webdriver.WebDriver, url: str):
-    browser.get(url)
-    wait()
+    try:
+        browser.get(url)
+        wait()
+    except WebDriverException:
+        logging.error(f"Something went wrong while executing the task")
+        logging.error(traceback.format_exc())

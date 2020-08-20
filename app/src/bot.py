@@ -1,6 +1,8 @@
 import logging
+import traceback
 
 from selenium import webdriver
+from selenium.common.exceptions import WebDriverException
 from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
 from selenium.webdriver.firefox.options import Options
 
@@ -32,31 +34,35 @@ log_in(browser)
 
 
 # Open points page and check points
-def _get_points() -> int:
-    open_points_page(browser)
-    return get_current_amount_of_points(browser, False)
+def _get_points(when: bool) -> int:
+    try:
+        open_points_page(browser)
+        return get_current_amount_of_points(browser, when)
+    except WebDriverException:
+        logging.error(f"Something went wrong while executing the task")
+        logging.error(traceback.format_exc())
+        return 0
 
 
-points_before = _get_points()
+points_before = _get_points(False)
 
 # Open points page and perform check-in, open points page and check points
 open_my_account_page(browser)
 perform_check_in(browser)
-open_points_page(browser)
-get_current_amount_of_points(browser, False)
+_get_points(False)
 
 # Open tasks page and perform tasks, open points page and check points after each task
 open_tasks_page(browser)
 perform_browse_and_add_to_cart(browser)
-_get_points()
+_get_points(False)
 open_tasks_page(browser)
 perform_browse_and_add_to_wish_list(browser)
-_get_points()
+_get_points(False)
 open_tasks_page(browser)
 perform_search_and_add_to_cart(browser)
 
 # Open points page and check points
-points_after = _get_points()
+points_after = _get_points(True)
 points_earned = points_after - points_before
 logging.info(f"Earned {points_earned} points!")
 

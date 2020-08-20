@@ -36,66 +36,88 @@ logging.basicConfig(level=logging.INFO)
 
 # Log in
 def log_in(browser: webdriver.WebDriver):
-    logging.info("Getting email input field in the login form")
-    email_login_input_field = browser.find_element_by_xpath("/html/body/div[1]/div/form[1]/ul/li[1]/label/div/input")
+    try:
+        logging.info("Getting email input field in the login form")
+        email_login_input_field = browser.find_element_by_xpath(
+            "/html/body/div[1]/div/form[1]/ul/li[1]/label/div/input")
 
-    logging.info("Getting password input field in the login form")
-    password_login_input_field = browser.find_element_by_xpath("/html/body/div[1]/div/form[1]/ul/li[2]/label/div/input")
+        logging.info("Getting password input field in the login form")
+        password_login_input_field = browser.find_element_by_xpath(
+            "/html/body/div[1]/div/form[1]/ul/li[2]/label/div/input")
 
-    logging.info("Filling out the login form")
-    email_login_input_field.send_keys(get_username())
-    password_login_input_field.send_keys(get_password())
+        logging.info("Filling out the login form")
+        email_login_input_field.send_keys(get_username())
+        password_login_input_field.send_keys(get_password())
 
-    logging.info("Performing login (getting the button and clicking it)")
-    browser.find_element_by_xpath("/html/body/div[1]/div/form[1]/ul/li[3]/input").click()
+        logging.info("Performing login (getting the button and clicking it)")
+        browser.find_element_by_xpath("/html/body/div[1]/div/form[1]/ul/li[3]/input").click()
 
-    wait()
+        wait()
+    except WebDriverException:
+        logging.error(f"Something went wrong while executing the task")
+        logging.error(traceback.format_exc())
 
 
 # Log out
 def log_out(browser: webdriver.WebDriver):
-    # Sign out
-    logging.info("Logging out")
-    browser.get("https://www.banggood.com/")
-    browser.get("https://www.banggood.com/index.php?com=account&t=logout")
-    logging.info("Logout done!")
+    try:
+        # Sign out
+        logging.info("Logging out")
+        browser.get("https://www.banggood.com/")
+        browser.get("https://www.banggood.com/index.php?com=account&t=logout")
+        logging.info("Logout done!")
+    except WebDriverException:
+        logging.error(f"Something went wrong while executing the task")
+        logging.error(traceback.format_exc())
 
 
 # Perform daily check-in
 def perform_check_in(browser: webdriver.WebDriver):
-    logging.info("Hovering over the check-in button (in sidebar)")
-    sidebar_check_in_div_xpath = "//div[contains(@class, 'aside-wrap')]" \
-                                 "//div[contains(@class, 'aside') and contains(@class, 'check-in')]"
-    sidebar_check_in_button_xpath = f"{sidebar_check_in_div_xpath}//p[contains(text(), 'Check-in')]"
-    sidebar_check_in_div_element = browser.find_element_by_xpath(sidebar_check_in_div_xpath)
-    sidebar_check_in_button_element = browser.find_element_by_xpath(sidebar_check_in_button_xpath)
-    scroll_to_and_hover_over_element(browser, sidebar_check_in_button_element)
+    try:
+        logging.info("Hovering over the check-in button (in sidebar)")
+        sidebar_check_in_div_xpath = "//div[contains(@class, 'aside-wrap')]" \
+                                     "//div[contains(@class, 'aside') and contains(@class, 'check-in')]"
+        sidebar_check_in_button_xpath = f"{sidebar_check_in_div_xpath}//p[contains(text(), 'Check-in')]"
+        sidebar_check_in_div_element = browser.find_element_by_xpath(sidebar_check_in_div_xpath)
+        sidebar_check_in_button_element = browser.find_element_by_xpath(sidebar_check_in_button_xpath)
+        scroll_to_and_hover_over_element(browser, sidebar_check_in_button_element)
 
-    logging.info("Getting the button from the popup")
-    check_in_button_xpath = "//div[contains(@class, 'check-btn') and contains(@class, 'J-check-in')]"
-    check_in_button_element = sidebar_check_in_div_element.find_element_by_xpath(check_in_button_xpath)
-    if check_in_button_element.text.lower() == "check-in":
-        logging.info("Clicking the check-in button")
-        check_in_button_element.click()
-        sleep(2)  # The get_sleep_time() method is not used as it always needs ~2 seconds here to view the popup
-        # # Click on the button on popup to close it
-        # browser.find_element_by_xpath("//*[contains(text(), 'OK, I know')]").click()
-        # logging.info("Check-in was successful")
-    else:
-        # Get time left for the next check-in
-        logging.info(f"Not clicking a button. The text in the button was {check_in_button_element.text}. Moving on")
-        next_check_in = sidebar_check_in_div_element.find_element_by_class_name("countdown").text
-        logging.info(f"Next check-in in: {re.search('(Restart In: )(.*)', next_check_in).group(2)}")
+        logging.info("Getting the button from the popup")
+        check_in_button_xpath = "//div[contains(@class, 'check-btn') and contains(@class, 'J-check-in')]"
+        check_in_button_element = sidebar_check_in_div_element.find_element_by_xpath(check_in_button_xpath)
+        if check_in_button_element.text.lower() == "check-in":
+            logging.info("Clicking the check-in button")
+            check_in_button_element.click()
+            sleep(2)  # The get_sleep_time() method is not used as it always needs ~2 seconds here to view the popup
+            # # Click on the button on popup to close it
+            # browser.find_element_by_xpath("//*[contains(text(), 'OK, I know')]").click()
+            # logging.info("Check-in was successful")
+        else:
+            # Get time left for the next check-in
+            logging.info(f"Not clicking a button. The text in the button was {check_in_button_element.text}. Moving on")
+            next_check_in = sidebar_check_in_div_element.find_element_by_class_name("countdown").text
+            logging.info(f"Next check-in in: {re.search('(Restart In: )(.*)', next_check_in).group(2)}")
+    except WebDriverException:
+        logging.error(f"Something went wrong while executing the task")
+        logging.error(traceback.format_exc())
 
 
 # Complete task "Browse and add 3 products to cart" and get reward points
 def perform_browse_and_add_to_cart(browser: webdriver.WebDriver):
-    _perform_browse_and_add(browser, browse_add_3_products_to_cart())
+    try:
+        _perform_browse_and_add(browser, browse_add_3_products_to_cart())
+    except WebDriverException:
+        logging.error(f"Something went wrong while executing the task")
+        logging.error(traceback.format_exc())
 
 
 # Complete task "Browse and add 3 products to wish list" and get reward points
 def perform_browse_and_add_to_wish_list(browser: webdriver.WebDriver):
-    _perform_browse_and_add(browser, browse_add_3_products_to_wish_list())
+    try:
+        _perform_browse_and_add(browser, browse_add_3_products_to_wish_list())
+    except WebDriverException:
+        logging.error(f"Something went wrong while executing the task")
+        logging.error(traceback.format_exc())
 
 
 # Complete task "Search products and add to cart" and get reward points
@@ -132,8 +154,6 @@ def get_current_amount_of_points(browser: webdriver.WebDriver, is_tasks_finished
 
 def _perform_browse_and_add(browser: webdriver.WebDriver, task_data: TaskData):
     # todo:
-    # - wrap each task in try/catch and if a task fails don't let the app fail, but just move to the next task
-    # - write down (in logger) the amount of points before and after each task (and after all tasks)
     # - fill out __init.py__ file(s)
     # - refactor imports if necessary
     is_reward_received = find_task_button_and_click_it(browser, task_data)
