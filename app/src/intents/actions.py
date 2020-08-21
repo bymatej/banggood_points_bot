@@ -153,9 +153,6 @@ def get_current_amount_of_points(browser: webdriver.WebDriver, is_tasks_finished
 
 
 def _perform_browse_and_add(browser: webdriver.WebDriver, task_data: TaskData):
-    # todo:
-    # - fill out __init.py__ file(s)
-    # - refactor imports if necessary
     is_reward_received = find_task_button_and_click_it(browser, task_data)
     if is_reward_received:
         return

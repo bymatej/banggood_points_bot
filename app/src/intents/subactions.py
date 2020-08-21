@@ -21,7 +21,7 @@ from selenium.webdriver.remote.webelement import WebElement
 from selenium.webdriver.support import expected_conditions as ec
 from selenium.webdriver.support.ui import WebDriverWait
 
-from common.exceptions import ProductAlreadyInWishListException
+from common import ProductAlreadyInWishListException
 from intents.navigator import open_cart_page
 from intents.navigator import open_wish_list_page
 from intents.tasks import TaskData
@@ -272,7 +272,7 @@ def _search_for_product_in_wish_list_and_get_input_field_element(browser: webdri
     WebDriverWait(browser, 10).until(ec.presence_of_element_located((By.XPATH, search_button_xpath)))
     WebDriverWait(browser, 10).until(ec.element_to_be_clickable((By.XPATH, search_button_xpath)))
     search_button_element = browser.find_element_by_xpath(search_button_xpath)
-    scroll_to_and_hover_over_element(search_button_element)
+    scroll_to_and_hover_over_element(browser, search_button_element)
     search_button_element.click()
 
     logging.info("Filling out the input field")
